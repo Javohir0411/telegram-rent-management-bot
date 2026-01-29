@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from sqlalchemy import select
@@ -16,6 +18,13 @@ router = Router(name=__name__)
 async def handle_choosing_renter(message: types.Message, state: FSMContext):
     lang = await get_user_language(message)
     renter_name = message.text
+    try:
+        renter_id = int(renter_name.split("(#")[-1].replace(")", "").strip())
+        logging.info(f"RENTER ID: {renter_id}")
+    except Exception as e:
+        logging.warning(f"DIQQAT: {e}")
+        await message.answer("Iltimos ro‘yxatdan tugma orqali tanlang.")
+        return
     async with async_session_maker() as session:
         result = await session.execute(
             select(Renter)
@@ -23,7 +32,7 @@ async def handle_choosing_renter(message: types.Message, state: FSMContext):
                 selectinload(Renter.rents)
                 .selectinload(Rent.product)  # 🔑 SHU TARZDA
             )
-            .where(Renter.renter_fullname == renter_name)
+            .where(Renter.id == renter_id)
         )
         renter = result.scalar_one_or_none()
         if not renter:

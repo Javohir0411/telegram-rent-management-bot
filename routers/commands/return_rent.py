@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -31,7 +33,8 @@ async def return_rent(message: types.Message, state: FSMContext):
                 }[lang]
             )
 
-        kb = build_select_keyboard([r.renter_fullname for r in renters])
+        kb = build_select_keyboard([f"{r.renter_fullname} (#{r.id})" for r in renters])
+        logging.info(f"KBKBKB: {kb}")
         text = {
             "uzl": "Ijarachini tanlang: ",
             "uzk": "Ижарачини танланг: ",
@@ -39,6 +42,7 @@ async def return_rent(message: types.Message, state: FSMContext):
         }
         await message.answer(text[lang], reply_markup=kb)
         await state.set_state(ReturnProduct.choosing_renter)
+
 
 @router.message(Command("return", prefix="/!"))
 async def return_rent_not_admin(message: types.Message):

@@ -84,12 +84,12 @@ async def cancel_handle(message: types.Message, state: FSMContext) -> None:
     state_current = await state.get_state()
     if state_current is None:
         await message.answer(
-            text=f"ОК, лекин ҳеч нарсани бошламаган эдик ҳали. Ижарани бошлаш: /rent",
+            text=f"ОК, лекин ҳеч нарсани бошламаган эдик ҳали.",
             reply_markup=types.ReplyKeyboardRemove()
         )
         return
     await state.clear()
     await message.answer(
-        text=f"Жараён <b><u>{state_current.split(':')[-1]}</u></b> қадамида тўхтатилди, Қайта бошлаш учун: /rent",
+        text=f"Жараён <b><u>{state_current.split(':')[-1]}</u></b> қадамида тўхтатилди.",
         reply_markup=types.ReplyKeyboardRemove()
     )

@@ -14,8 +14,8 @@ async def get_rents_for_report(session, user_db_id: int, start_date: date, end_d
         .where(
             and_(
                 Rent.user_id == user_db_id,  # <<< MUHIM: faqat shu user
-                Rent.start_date >= start_date,
-                Rent.end_date <= end_date,
+                Rent.end_date >= start_date,
+                Rent.start_date <= end_date,
             )
         )
         .order_by(Rent.start_date.asc(), Rent.id.asc())

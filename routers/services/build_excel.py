@@ -35,13 +35,13 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
     # TITLE
     # =======================
     ws["A1"] = f"Ижара ҳисобот: {start_date} — {end_date}"
-    ws.merge_cells("A1:N1")
+    ws.merge_cells("A1:P1")
     ws["A1"].font = title_font
     ws["A1"].alignment = center
     ws.row_dimensions[1].height = 24
 
     ws["A2"] = f"Жами ёзувлар: {len(rents)}"
-    ws.merge_cells("A2:N2")
+    ws.merge_cells("A2:P2")
     ws["A2"].alignment = left
 
     # =======================
@@ -57,8 +57,10 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
         "Миқдор",
         "Бошланиш санаси",
         "Тугаш санаси",
+        "Ижарага берилган сана",
         "Кунлар",
         "Кунлик нарх",
+        "Тўлов ҳолати",
         "Маҳсулот нархи",
         "Етказиб бериш",
         "Умумий сумма",
@@ -93,11 +95,13 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
         product_type = str(product.product_type) if product else ""
         product_size = str(product.product_size) if product and product.product_size else ""
         price_per_day = float(product.price_per_day or 0) if product else 0
+        status = str(r.status or None)
 
         qty = int(r.quantity or 0)
 
         sd = r.start_date.date() if isinstance(r.start_date, datetime) else r.start_date
         ed = r.end_date.date() if isinstance(r.end_date, datetime) else r.end_date
+        cd = r.created_at.date() if isinstance(r.created_at, datetime) else r.created_at
 
         days = (ed - sd).days
         if days <= 0:
@@ -121,8 +125,10 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
             qty,
             sd,
             ed,
+            cd,
             days,
             price_per_day,
+            status,
             product_price,
             delivery_price,
             total,
@@ -136,12 +142,10 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
     # =======================
     # FORMATS
     # =======================
-    money_cols = [11, 12, 13, 14]
+    money_cols = [12, 14, 15, 16]
     for r in range(start_data_row, ws.max_row + 1):
-        logging.info(f"RRR: {r}")
         for c in money_cols:
             ws.cell(row=r, column=c).number_format = '#,##0.00'
-            logging.info(f"WC.CELL: {  ws.cell(row=r, column=c).number_format}")
 
     ws.column_dimensions["H"].number_format = "yyyy-mm-dd"
     ws.column_dimensions["I"].number_format = "yyyy-mm-dd"
@@ -170,11 +174,10 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
     ws[f"B{client_start - 1}"].font = bold_font
     totally_sum = 0
     for i, (client, total_sum) in enumerate(client_totals.items(), start=client_start):
+        logging.info(f"CLIENTS TOTALS: {client_totals}")
+        logging.info(f"CLIENTS TOTALS IIII: {i}")
         ws[f"B{i}"] = client
-        logging.info(f"CLIENT: {client}")
-
         ws[f"D{i}"] = total_sum
-        logging.info(f"TOTAL SUM: {total_sum}")
         ws[f"D{i}"].number_format = '#,##0.00'
         # ws[f"D{i}"].font = bold_font
         totally_sum += total_sum

@@ -5,7 +5,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from database.session import get_user_language
-from keyboards.report_range_kb import report_range_kb
+from keyboards.inlinekeyboard.report_range_kb import report_range_kb
 from states import ReportState
 from utils.admin_only import AdminOnly
 
@@ -19,12 +19,11 @@ async def rent_report_start(message: types.Message, state: FSMContext):
     logging.info(f"RENT REPORT TEXT: {message.text}")
     await message.answer(
         {
-            "uzl":"📅 Sana oralig‘ini yuboring (faqat sana):\n `DD.MM.YYYY DD.MM.YYYY`\n Masalan: `01.01.2026 10.01.2026`",
-            "uzk":"📅 Сана оралиғини юборинг (фақат сана):\n `ДД.ММ.ГГГГ ДД.ММ.ГГГГ` \n Масалан: `01.01.2026 10.01.2026`",
-            "rus":"📅 Укажите диапазон дат (только даты).:\n `ДД.ММ.ГГГГ ДД.ММ.ГГГГ` \n Например: `01.01.2026 10.01.2026`",
-        }.get(lang, "📅 Сана оралиғини юборинг (фақат сана):\n `ДД.ММ.ГГГГ ДД.ММ.ГГГГ` \n Масалан: `01.01.2026 10.01.2026`"),
-        parse_mode="Markdown",
-        # reply_markup=report_range_kb(lang)
+            "uzl":"📅 Hisobot oralig‘ini tanlang yoki qo‘lda kiriting:",
+            "uzk":"📅 Ҳисобот оралиғини танланг ёки қўлда киритинг:",
+            "rus":"📅 Выберите период или введите вручную:",
+        }.get(lang, "📅 Ҳисобот оралиғини танланг ёки қўлда киритинг:"),
+        reply_markup=report_range_kb(lang)
     )
     await state.set_state(ReportState.get_start_end_dates)
 
