@@ -1,6 +1,8 @@
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 import logging
+
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL
 from bot_strings.rent_command_strings import RentStrings
 from bot_strings.renter_info_strings import RenterInfo
 from database.products.available_product import get_available_products
@@ -32,13 +34,22 @@ async def handle_additional_choice_ok(message: types.Message, state: FSMContext)
     await state.set_state(RentStatus.product_choice)
 
     text = RentStrings.CHOOSE_ANOTHER_PRODUCT[lang]
+
+    available_types = set()
+
     for product, remaining_quantity in available_products:
         # if product.product_type.name == ProductTypeEnum.lesa.name:
         #     size_name = product.product_size.name
         #     product_name = RentStrings.CHOOSE_PRODUCT_KEYBOARD[lang][ProductTypeEnum.lesa.name][size_name]
         # else:
-        product_name = RentStrings.CHOOSE_PRODUCT_KEYBOARD[lang][product.product_type.name]
+        if product.product_type.name == ProductTypeEnum.taxta_opalubka.name:
+            size_name = product.product_size.name
+            product_name = RentStrings.CHOOSE_PRODUCT_KEYBOARD[lang][ProductTypeEnum.taxta_opalubka.name][size_name]
 
+        else:
+            product_name = RentStrings.CHOOSE_PRODUCT_KEYBOARD[lang][product.product_type.name]
+
+        available_types.add(product.product_type.name)
         # real-time qoldiqni chiqaramiz
         if lang == "uzl":
             text += f"<b>{product_name}</b> - Qoldiq: {remaining_quantity}\n"
@@ -50,9 +61,12 @@ async def handle_additional_choice_ok(message: types.Message, state: FSMContext)
     data = await state.get_data()
     logging.info(f"DATA: {data}")
 
+    kb = [PRODUCT_TYPE_LABEL[lang][t] for t in available_types]
+    logging.info(f"KB: {kb}")
     await message.answer(
         text=text,
-        reply_markup=build_select_keyboard(ProductTypeEnum),
+        reply_markup=build_select_keyboard(kb),
+
     )
 
 

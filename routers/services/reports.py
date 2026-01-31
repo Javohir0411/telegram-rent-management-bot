@@ -68,7 +68,7 @@ async def generate_and_send_report(
         )
         return
 
-    stream = build_excel(rents, start_date, end_date)
+    stream = build_excel(lang, rents, start_date, end_date)
 
     os.makedirs("tmp", exist_ok=True)
     filename = f"rent_report_{start_date.isoformat()}_to_{end_date.isoformat()}.xlsx"

@@ -45,3 +45,29 @@ async def handle_rent_end_date(message: types.Message, state: FSMContext):
         text=text,
         # reply_markup=build_location_type_kb(lang)
     )
+
+
+@router.message(RentStatus.start_date)
+@router.message(RentStatus.end_date)
+async def handle_rent_end_date(message: types.Message):
+    lang = await get_user_language(message)
+    await message.reply(
+        {
+            "uzl": "❌ Sana noto'g'ri kiritildi.\n"
+                   "Iltimos, sanani `DD.MM.YYYY` formatida kiriting.\n"
+                   "Masalan: `01.01.2026`\n",
+
+            "uzk": "❌ Сана нотўғри киритилди.\n"
+                   "Илтимос, санани `DD.MM.YYYY` форматида киритинг.\n"
+                   "Масалан: `01.01.2026`\n",
+
+            "rus": "❌ Неверный формат даты.\n"
+                   "Пожалуйста, введите дату в формате `DD.MM.YYYY`.\n"
+                   "Например: `01.01.2026`\n"
+
+        }.get(lang, "❌ Сана нотўғри киритилди.\n"
+                    "Илтимос, санани `DD.MM.YYYY` форматида киритинг.\n"
+                    "Масалан: `01.01.2026`\n", ),
+        reply_markup=types.ReplyKeyboardRemove(),
+        parse_mode="Markdown",
+    )

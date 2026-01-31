@@ -11,15 +11,19 @@ class LanguageEnum(StrEnum):
 
 
 class ProductTypeEnum(StrEnum):
-    lesa = "Леса"
-    monolit = "Монолит устун"
-    taxta = "Тахта"
+    lesa = "lesa"
+    monolit = "monolit"
+    taxta_opalubka = "taxta_opalubka"
+    metal_opalubka = "metal_opalubka"
 
-
-class LesaSizeEnum(StrEnum):
+class ProductSizeEnum(StrEnum):
     katta = "katta"
     orta = "orta"
     kichik = "kichik"
+    four_meters = "four_meters"
+    three_meters = "three_meters"
+    two_meters = "two_meters"
+    one_meter = "one_meter"
 
 
 class RentStatusEnum(StrEnum):
@@ -56,7 +60,7 @@ class StatusCB(CallbackData, prefix="status"):
 
 """
 CREATE TYPE ProductTypeEnum AS ENUM ('lesa', 'monolit', 'taxta');
-CREATE TYPE LesaSizeEnum AS ENUM ('katta', 'orta', 'kichik', 'none');
+CREATE TYPE ProductSizeEnum AS ENUM ('katta', 'orta', 'kichik', 'none');
 CREATE TYPE RentStatusEnum AS ENUM ('full_paid', 'part_paid', 'not_paid');
 CREATE TYPE LanguageEnum AS ENUM ('uzl', 'uzk', 'rus');
 """

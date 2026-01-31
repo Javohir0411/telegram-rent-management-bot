@@ -10,8 +10,10 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL, SIZE_LABEL
 
-def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesIO:
+
+def build_excel(lang: str, rents: List["Rent"], start_date: date, end_date: date) -> BytesIO:
     wb = Workbook()
     ws = wb.active
     ws.title = "Ижара ҳисобот"
@@ -35,13 +37,13 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
     # TITLE
     # =======================
     ws["A1"] = f"Ижара ҳисобот: {start_date} — {end_date}"
-    ws.merge_cells("A1:P1")
+    ws.merge_cells("A1:Q1")
     ws["A1"].font = title_font
     ws["A1"].alignment = center
     ws.row_dimensions[1].height = 24
 
     ws["A2"] = f"Жами ёзувлар: {len(rents)}"
-    ws.merge_cells("A2:P2")
+    ws.merge_cells("A2:Q2")
     ws["A2"].alignment = left
 
     # =======================
@@ -61,6 +63,7 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
         "Кунлар",
         "Кунлик нарх",
         "Тўлов ҳолати",
+        "Ижара ҳолати",
         "Маҳсулот нархи",
         "Етказиб бериш",
         "Умумий сумма",
@@ -92,10 +95,11 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
         renter_phone = renter.renter_phone_number if renter else ""
         renter_passport = renter.renter_passport_info if renter else ""
 
-        product_type = str(product.product_type) if product else ""
-        product_size = str(product.product_size) if product and product.product_size else ""
+        product_type = str(PRODUCT_TYPE_LABEL[lang][product.product_type]) if product else ""
+        product_size = str(SIZE_LABEL[lang][product.product_size]) if product and product.product_size else ""
         price_per_day = float(product.price_per_day or 0) if product else 0
         status = str(r.status or None)
+        rent_status = str(r.rent_status or None)
 
         qty = int(r.quantity or 0)
 
@@ -129,6 +133,7 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
             days,
             price_per_day,
             status,
+            rent_status,
             product_price,
             delivery_price,
             total,
@@ -142,7 +147,7 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
     # =======================
     # FORMATS
     # =======================
-    money_cols = [12, 14, 15, 16]
+    money_cols = [12, 14, 15, 16, 17]
     for r in range(start_data_row, ws.max_row + 1):
         for c in money_cols:
             ws.cell(row=r, column=c).number_format = '#,##0.00'
@@ -187,7 +192,6 @@ def build_excel(rents: List["Rent"], start_date: date, end_date: date) -> BytesI
     ws[f"D{i + 2}"].font = bold_font
     ws[f"D{i + 2}"].number_format = '#,##0.00'
     ws[f"D{i + 2}"] = totally_sum
-
 
     # =======================
     # COLUMN WIDTHS

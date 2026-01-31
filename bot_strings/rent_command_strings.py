@@ -1,4 +1,4 @@
-from utils.enums import LanguageEnum, ProductTypeEnum, LesaSizeEnum
+from utils.enums import LanguageEnum, ProductTypeEnum, ProductSizeEnum
 
 
 class RentStrings:
@@ -20,37 +20,55 @@ class RentStrings:
         LanguageEnum.uzl.name: {
             ProductTypeEnum.lesa.name:
                 "Lesa"
-                # LesaSizeEnum.katta.name: "Lesa Katta",
-                # LesaSizeEnum.orta.name: "Lesa O'rta",
-                # LesaSizeEnum.kichik.name: "Lesa Kichik",
+                # ProductSizeEnum.katta.name: "Lesa Katta",
+                # ProductSizeEnum.orta.name: "Lesa O'rta",
+                # ProductSizeEnum.kichik.name: "Lesa Kichik",
             ,
 
-            ProductTypeEnum.monolit.name: "Monolit stoyka",
-            ProductTypeEnum.taxta.name: "Taxta",
+            ProductTypeEnum.monolit.name: "Monolit ustun",
+            ProductTypeEnum.taxta_opalubka.name: {
+                ProductSizeEnum.four_meters.name: "4 metrlik taxta opalubka",
+                ProductSizeEnum.three_meters.name: "3 metrlik taxta opalubka",
+                ProductSizeEnum.two_meters.name: "2 metrlik taxta opalubka",
+                ProductSizeEnum.one_meter.name: "1 metrlik taxta opalubka",
+            },
+            ProductTypeEnum.metal_opalubka.name:  "3 metrlik metal opalubka",
         },
 
         LanguageEnum.uzk.name: {
             ProductTypeEnum.lesa.name:
                 "Леса"
-                # LesaSizeEnum.katta.name: "Леса Катта",
-                # LesaSizeEnum.orta.name: "Леса Ўрта",
-                # LesaSizeEnum.kichik.name: "Леса Кичик",
+                # ProductSizeEnum.katta.name: "Леса Катта",
+                # ProductSizeEnum.orta.name: "Леса Ўрта",
+                # ProductSizeEnum.kichik.name: "Леса Кичик",
             ,
 
-            ProductTypeEnum.monolit.name: "Монолит стойка",
-            ProductTypeEnum.taxta.name: "Тахта",
+            ProductTypeEnum.monolit.name: "Монолит устун",
+            ProductTypeEnum.taxta_opalubka.name: {
+                ProductSizeEnum.four_meters.name: "4 метрлик тахта опалубка",
+                ProductSizeEnum.three_meters.name: "3 метрлик тахта опалубка",
+                ProductSizeEnum.two_meters.name: "2 метрлик тахта опалубка",
+                ProductSizeEnum.one_meter.name: "1 метрлик тахта опалубка",
+            },
+            ProductTypeEnum.metal_opalubka.name: "3 метрлик метал опалубка",
         },
 
         LanguageEnum.rus.name: {
             ProductTypeEnum.lesa.name:
                 "Леса"
-                # LesaSizeEnum.katta.name: "Большая Леса",
-                # LesaSizeEnum.orta.name: "Средняя Леса",
-                # LesaSizeEnum.kichik.name: "Маленькая Леса",
+                # ProductSizeEnum.katta.name: "Большая Леса",
+                # ProductSizeEnum.orta.name: "Средняя Леса",
+                # ProductSizeEnum.kichik.name: "Маленькая Леса",
             ,
 
-            ProductTypeEnum.monolit.name: "Монолитный стенд",
-            ProductTypeEnum.taxta.name: "Доска",
+            ProductTypeEnum.monolit.name: "Монолитная стойка",
+            ProductTypeEnum.taxta_opalubka.name: {
+                ProductSizeEnum.four_meters.name: "4-метровая деревянная доска",
+                ProductSizeEnum.three_meters.name: "3-метровая деревянная доска",
+                ProductSizeEnum.two_meters.name: "2-метровая деревянная доска",
+                ProductSizeEnum.one_meter.name: "Деревянная доска длиной 1 метр",
+            },
+            ProductTypeEnum.metal_opalubka.name: "3-метровый металлический настил"
         },
     }
 
@@ -68,19 +86,19 @@ class RentStrings:
 
     LESA_SIZE_TRANSLATION = {
         "uzl": {
-            LesaSizeEnum.katta.name: "Katta",
-            LesaSizeEnum.orta.name: "O'rta",
-            LesaSizeEnum.kichik.name: "Kichik",
+            ProductSizeEnum.katta.name: "Katta",
+            ProductSizeEnum.orta.name: "O'rta",
+            ProductSizeEnum.kichik.name: "Kichik",
         },
         "uzk": {
-            LesaSizeEnum.katta.name: "Катта",
-            LesaSizeEnum.orta.name: "Ўрта",
-            LesaSizeEnum.kichik.name: "Кичик",
+            ProductSizeEnum.katta.name: "Катта",
+            ProductSizeEnum.orta.name: "Ўрта",
+            ProductSizeEnum.kichik.name: "Кичик",
         },
         "rus": {
-            LesaSizeEnum.katta.name: "Большой",
-            LesaSizeEnum.orta.name: "Середина",
-            LesaSizeEnum.kichik.name: "Маленький",
+            ProductSizeEnum.katta.name: "Большой",
+            ProductSizeEnum.orta.name: "Середина",
+            ProductSizeEnum.kichik.name: "Маленький",
         }
     }
 
@@ -162,8 +180,8 @@ class RentStrings:
     SENT_LOCATION_INFO = {
         "uzl":
             "📍<b>Lokatsiya qabul qilindi</b>\n\n"
-            "<b>Latitude</b>: <u>{renter_latitude}</u>\n"
-            "<b>Longitude</b>: <u>{renter_longitude}</u>\n"
+            # "<b>Latitude</b>: <u>{renter_latitude}</u>\n"
+            # "<b>Longitude</b>: <u>{renter_longitude}</u>\n"
             "<b>Masofa</b>: <u>{distance_km}</u> km\n\n"
             "<b>Yetkazib berish narxi</b>:\n"
             "<b>2.5 km radius uchun: </b>\n"
@@ -174,8 +192,8 @@ class RentStrings:
 
         "uzk":
             "<b>📍Локация қабул қилинди</b>\n\n"
-            "<b>Латитуде</b>: <u>{renter_latitude}</u>\n"
-            "<b>Лонгитуде</b>: <u>{renter_longitude}</u>\n"
+            # "<b>Латитуде</b>: <u>{renter_latitude}</u>\n"
+            # "<b>Лонгитуде</b>: <u>{renter_longitude}</u>\n"
             "<b>Масофа</b>: <u>{distance_km}</u> км\n\n"
             "<b>Етказиб бериш нархи</b>:\n"
             "<b>2.5 км радиус учун: </b>\n"
@@ -186,8 +204,8 @@ class RentStrings:
 
         "rus":
             "📍<b>Принятое местоположение</b>\n\n"
-            "<b>Широта</b>: <u>{renter_latitude}</u>\n"
-            "<b>Долгота</b>: <u>{renter_longitude}</u>\n"
+            # "<b>Широта</b>: <u>{renter_latitude}</u>\n"
+            # "<b>Долгота</b>: <u>{renter_longitude}</u>\n"
             "<b>Расстояние</b>: <u>{distance_km}</u> км\n\n"
             "<b>Стоимость доставки</b>:\n"
             "<b>В радиусе 2,5 км:</b>\n"

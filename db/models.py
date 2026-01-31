@@ -13,7 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from database.base import Base
-from utils.enums import LesaSizeEnum, RentStatusEnum, ProductTypeEnum, PaymentStatusEnum
+from utils.enums import RentStatusEnum, ProductTypeEnum, PaymentStatusEnum, ProductSizeEnum
 
 
 #
@@ -46,8 +46,8 @@ class Renter(Base):
 class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True, index=True)
-    product_type = Column(Enum(ProductTypeEnum), nullable=False)
-    product_size = Column(Enum(LesaSizeEnum), nullable=True)
+    product_type = Column(Enum(ProductTypeEnum, name="product_type_enum"), nullable=False)
+    product_size = Column(Enum(ProductSizeEnum, name="product_size_enum"), nullable=True)
     total_quantity = Column(Integer, nullable=False)
     price_per_day = Column(Float, nullable=True)
 

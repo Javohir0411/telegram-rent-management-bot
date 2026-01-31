@@ -85,3 +85,28 @@ async def handle_location_request(message: types.Message, state: FSMContext):
         text=text,
         reply_markup=types.ReplyKeyboardRemove()
     )
+
+
+@router.message(RentStatus.location_request)
+async def handle_location_request(message: types.Message):
+    lang = await get_user_language(message)
+    await message.reply(
+        {
+            "uzl": "<b>Iltimos, joylashuvni yuboring!\n\n"
+                   "Joylashuvdan boshqa hech qanday xabar qabul qilinmaydi.\n\n"
+                   "Xohlasangiz /cancel buyrug'ini berish orqali ijaraga berish jarayonini to'xtatishingiz mumkin.</b>",
+
+            "uzk": "<b>Илтимос, жойлашувни юборинг!\n\n"
+                   "Жойлашувдан бошқа ҳеч қандай хабар қабул қилинмайди.\n\n"
+                   "Хоҳласангиз /cancel буйруғини бериш орқали ижарага бериш жараёнини тўхтатишингиз мумкин.</b>",
+
+            "rus": "<b>Пожалуйста, пришлите местоположение!\n\n"
+                   "Сообщения, содержащие только информацию о местоположении, не принимаются.\n\n"
+                   "При желании вы можете остановить процесс аренды, выполнив команду /cancel.</b>"
+        }.get(lang, "<b>Илтимос, жойлашувни юборинг!\n\n"
+                    "Жойлашувдан бошқа ҳеч қандай хабар қабул қилинмайди.\n\n"
+                    "Хоҳласангиз /cancel буйруғини бериш орқали ижарага бериш жараёнини тўхтатишингиз мумкин.</b>"
+              ),
+        reply_markup=types.ReplyKeyboardRemove(),
+        parse_mode="Markdown",
+    )

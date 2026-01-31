@@ -2,7 +2,7 @@ from database.products.available_product import get_available_products
 from utils.get_user_from_db import get_user_by_telegram_or_phone
 from bot_strings.rent_command_strings import RentStrings
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from utils.enums import LanguageEnum, ProductTypeEnum, LesaSizeEnum
+from utils.enums import LanguageEnum, ProductTypeEnum, ProductSizeEnum
 from database.session import async_session_maker
 from aiogram import types
 

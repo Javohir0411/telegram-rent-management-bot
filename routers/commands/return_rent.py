@@ -32,16 +32,16 @@ async def return_rent(message: types.Message, state: FSMContext):
                     "rus": "В настоящее время товары, доступные для аренды, отсутствуют.",
                 }[lang]
             )
-
-        kb = build_select_keyboard([f"{r.renter_fullname} (#{r.id})" for r in renters])
-        logging.info(f"KBKBKB: {kb}")
-        text = {
-            "uzl": "Ijarachini tanlang: ",
-            "uzk": "Ижарачини танланг: ",
-            "rus": "Выберите арендатора: ",
-        }
-        await message.answer(text[lang], reply_markup=kb)
-        await state.set_state(ReturnProduct.choosing_renter)
+        elif renters:
+            kb = build_select_keyboard([f"{r.renter_fullname} (#{r.id})" for r in renters])
+            logging.info(f"KBKBKB: {kb}")
+            text = {
+                "uzl": "Ijarachini tanlang: ",
+                "uzk": "Ижарачини танланг: ",
+                "rus": "Выберите арендатора: ",
+            }
+            await message.answer(text[lang], reply_markup=kb)
+            await state.set_state(ReturnProduct.choosing_renter)
 
 
 @router.message(Command("return", prefix="/!"))

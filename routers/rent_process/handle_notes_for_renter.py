@@ -1,47 +1,8 @@
-# import logging
-#
-# from aiogram import Router, F, types
-# from aiogram.fsm.context import FSMContext
-#
-# from database.session import get_user_language
-# from states import RentStatus
-#
-# router = Router(name=__name__)
-#
-#
-# @router.message(F.text, RentStatus.notes)
-# async def handle_notes_for_renter(message: types.Message, state: FSMContext):
-#     text = message.text
-#     lang = await get_user_language(message)
-#     if text.casefold() == "skip":
-#         if lang == "uzl":
-#             rent_result = "Ijara ma'lumotlari saqlandi!✅"
-#         elif lang == "uzk":
-#             rent_result = "Ижара маълумотлари сақланди!✅"
-#         elif lang == "rus":
-#             rent_result = "Информация об аренде сохранена!✅"
-#         await message.answer(
-#             text=rent_result,
-#             reply_markup=types.ReplyKeyboardRemove()
-#         )
-#     else:
-#         await state.update_data(notes=text)
-#         data = await state.get_data()
-#         logging.info(f"IJARA MA'LUMOTLARI: {data}")
-#         if lang == "uzl":
-#             rent_result = "Ijara ma'lumotlari saqlandi!✅"
-#         elif lang == "uzk":
-#             rent_result = "Ижара маълумотлари сақланди!✅"
-#         elif lang == "rus":
-#             rent_result = "Информация об аренде сохранена!✅"
-#         await message.answer(
-#             text=rent_result,
-#             reply_markup=types.ReplyKeyboardRemove()
-#         )
-
 import logging
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
+
+from bot_strings.enum_str import SIZE_LABEL, PRODUCT_TYPE_LABEL
 from database.session import async_session_maker  # AsyncSession yaratish uchun
 from database.session import get_user_language
 from states import RentStatus
@@ -65,8 +26,8 @@ async def handle_notes_for_renter(message: types.Message, state: FSMContext):
 
     # 3️⃣ Bazaga saqlash
     try:
-        async with async_session_maker() as session:
-            rents = await save_rent_from_fsm(data)  # Bu funksiya Renter va Rentlarni saqlaydi
+        # async with async_session_maker() as session:
+        rents = await save_rent_from_fsm(data)  # Bu funksiya Renter va Rentlarni saqlaydi
     except Exception as e:
         logging.error(f"Rents saqlashda xatolik: {e}")
         error_msg = {
@@ -80,9 +41,9 @@ async def handle_notes_for_renter(message: types.Message, state: FSMContext):
     # 4️⃣ Foydalanuvchiga batafsil xabar tayyorlash
     message_lines = []
     for rent in rents:
-        product_name = f"{rent.product.product_type}"
+        product_name = f"{PRODUCT_TYPE_LABEL[lang][rent.product.product_type]}"
         if rent.product.product_size:
-            product_name += f" ({rent.product.product_size})"
+            product_name += f" ({SIZE_LABEL[lang][rent.product.product_size]})"
         days = (rent.end_date - rent.start_date).days
         line = f"<b>{product_name}</b> — <u>{rent.quantity}</u> дона\n"
         line += f"<b>Ижара кунлари:</b> <u>{days}</u>\n"
@@ -107,3 +68,28 @@ async def handle_notes_for_renter(message: types.Message, state: FSMContext):
 
     # 5️⃣ FSMContext ni tozalash
     await state.clear()
+
+
+@router.message(RentStatus.notes)
+async def handle_notes_for_renter(message: types.Message):
+    lang = await get_user_language(message)
+    await message.reply(
+        {
+            "uzl": "<b>Eslatma/Izoh</b> faqat matn ko'rinishida saqlanadi.\n"
+                   "Ma'lumot saqlamoqchi bo'lsangiz, iltimos, faqat matn kiriting.\n"
+                   "Agar, xohlamasangiz `Skip` deb yozib yuboring",
+
+            "uzk": "<b>Эслатма/Изоҳ</b> фақат матн кўринишида сақланади.\n"
+                   "Маълумот сақламоқчи бўлсангиз, илтимос, фақат матн киритинг.\n"
+                   "Агар, хоҳламасангиз `Skip` деб ёзиб юборинг",
+
+            "rus": "<b>Примечание/комментарий</b> будет сохранено только в текстовом виде.\n"
+                   "Если вы хотите сохранить информацию, пожалуйста, введите только текст.\n"
+                   "Если вы не хотите этого делать, введите `Skip`.",
+
+        }.get(lang, "<b>Эслатма/Изоҳ</b> фақат матн кўринишида сақланади.\n"
+                    "Маълумот сақламоқчи бўлсангиз, илтимос, фақат матн киритинг.\n"
+                    "Агар, хоҳламасангиз `Skip` деб ёзиб юборинг"),
+        reply_markup=types.ReplyKeyboardRemove(),
+        parse_mode="Markdown"
+    )

@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL
 from database.session import get_user_language, async_session_maker
 from db.models import Renter, Rent
 from keyboards.common_keyboards import build_select_keyboard
@@ -64,7 +65,7 @@ async def handle_choosing_renter(message: types.Message, state: FSMContext):
             #     items.append(f"{p.product_type.value} | {p.product_size.value} ({r.quantity})")
             # else:
             # Lesa-ni hozircha bitta hajmi bor
-            items.append(f"{p.product_type.value} ({r.quantity})")
+            items.append(f"{PRODUCT_TYPE_LABEL[lang][p.product_type.value]} ({r.quantity})")
 
         kb = build_select_keyboard(items)
 

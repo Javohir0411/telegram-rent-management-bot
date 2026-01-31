@@ -10,6 +10,8 @@ class Register(StatesGroup):
 class RentStatus(StatesGroup):
     product_choice = State()
     lesa_size_choice = State()
+    taxta_size_choice = State()
+    metal_size_choice = State()
     quantity = State()
     additional_choice = State()
     renter_fullname = State()

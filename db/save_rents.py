@@ -27,13 +27,12 @@ async def save_rent_from_fsm(fsm_data: dict):
         for item in fsm_data["rent_info"]:
 
             # ⚠️ MUHIM: product_type + product_size bilan aniq topish
-            query = select(Product).where(
-                Product.product_type == item["product_type"]
+            query = (
+                select(Product)
+                .where(Product.product_type == item["product_type"])
+                .where(Product.product_size.is_(None) if item.get("product_size") is None
+                       else Product.product_size == item["product_size"])
             )
-
-            if item.get("product_size") is not None:
-                query = query.where(Product.product_size == item["product_size"])
-
             result = await session.execute(query)
             product = result.scalar_one()  # endi xato bo‘lmaydi
 
