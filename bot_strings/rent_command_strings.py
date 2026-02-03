@@ -214,3 +214,27 @@ class RentStrings:
             "\n    <b>Итого:</b> <u>60 000</u> сумов\n\n"
             "<b>Для указанного местоположения:</b> <u>{price_delivery}</u> сум",
     }
+
+    DATE_MODE_ASK = {
+        "uzl": "Ijara sanasini qanday kiritamiz?\n\n1) Boshlanish + tugash (aniq sanali)\n2) Faqat boshlanish (qaytganda tugaydi)",
+        "uzk": "Ижара санасини қандай киритамиз?\n\n1) Бошланиш + тугаш (аниқ санали)\n2) Фақат бошланиш (қайтарганда тугайди)",
+        "rus": "Как вводим даты аренды?\n\n1) Начало + конец (фиксированно)\n2) Только начало (закроем при возврате)"
+    }
+
+    DATE_MODE_FIXED = {
+        "uzl": "Boshlanish + tugash",
+        "uzk": "Бошланиш + тугаш",
+        "rus": "Начало + конец"
+    }
+
+    DATE_MODE_OPEN = {
+        "uzl": "Faqat boshlanish (qaytganda tugaydi)",
+        "uzk": "Фақат бошланиш (қайтарганда тугайди)",
+        "rus": "Только начало (закроем при возврате)"
+    }
+
+    DATE_MODE_INVALID = {
+        "uzl": "Iltimos, faqat tugmalar orqali tanlang.",
+        "uzk": "Илтимос, фақат тугмалар орқали танланг.",
+        "rus": "Пожалуйста, выберите только кнопкой."
+    }

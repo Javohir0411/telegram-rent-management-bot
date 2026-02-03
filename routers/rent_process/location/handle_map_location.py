@@ -92,21 +92,20 @@ async def handle_location_request(message: types.Message):
     lang = await get_user_language(message)
     await message.reply(
         {
-            "uzl": "<b>Iltimos, joylashuvni yuboring!\n\n"
+            "uzl": "Iltimos, joylashuvni yuboring!\n\n"
                    "Joylashuvdan boshqa hech qanday xabar qabul qilinmaydi.\n\n"
-                   "Xohlasangiz /cancel buyrug'ini berish orqali ijaraga berish jarayonini to'xtatishingiz mumkin.</b>",
+                   "Xohlasangiz /cancel buyrug'ini berish orqali ijaraga berish jarayonini to'xtatishingiz mumkin.",
 
-            "uzk": "<b>Илтимос, жойлашувни юборинг!\n\n"
+            "uzk": "Илтимос, жойлашувни юборинг!\n\n"
                    "Жойлашувдан бошқа ҳеч қандай хабар қабул қилинмайди.\n\n"
-                   "Хоҳласангиз /cancel буйруғини бериш орқали ижарага бериш жараёнини тўхтатишингиз мумкин.</b>",
+                   "Хоҳласангиз /cancel буйруғини бериш орқали ижарага бериш жараёнини тўхтатишингиз мумкин.",
 
-            "rus": "<b>Пожалуйста, пришлите местоположение!\n\n"
+            "rus": "Пожалуйста, пришлите местоположение!\n\n"
                    "Сообщения, содержащие только информацию о местоположении, не принимаются.\n\n"
-                   "При желании вы можете остановить процесс аренды, выполнив команду /cancel.</b>"
-        }.get(lang, "<b>Илтимос, жойлашувни юборинг!\n\n"
+                   "При желании вы можете остановить процесс аренды, выполнив команду /cancel."
+        }.get(lang, "Илтимос, жойлашувни юборинг!\n\n"
                     "Жойлашувдан бошқа ҳеч қандай хабар қабул қилинмайди.\n\n"
-                    "Хоҳласангиз /cancel буйруғини бериш орқали ижарага бериш жараёнини тўхтатишингиз мумкин.</b>"
+                    "Хоҳласангиз /cancel буйруғини бериш орқали ижарага бериш жараёнини тўхтатишингиз мумкин."
               ),
         reply_markup=types.ReplyKeyboardRemove(),
-        parse_mode="Markdown",
     )

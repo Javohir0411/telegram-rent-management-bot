@@ -1,17 +1,18 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL, SIZE_LABEL
 from database.session import get_user_language
 from utils.admin_only import AdminOnly
 from utils.get_total_product import get_total_product
 
 router = Router(name=__name__)
 
-PRODUCT_TYPE_TRANSLATIONS = {
-    "uzl": {"lesa": "Леса", "monolit": "Монолит устун", "taxta": "Тахта"},
-    "uzk": {"lesa": "Леса", "monolit": "Монолит устун", "taxta": "Тахта"},
-    "rus": {"lesa": "Леса", "monolit": "Монолит", "taxta": "Доска"},
-}
+# PRODUCT_TYPE_TRANSLATIONS = {
+#     "uzl": {"lesa": "Леса", "monolit": "Монолит устун", "taxta": "Тахта"},
+#     "uzk": {"lesa": "Леса", "monolit": "Монолит устун", "taxta": "Тахта"},
+#     "rus": {"lesa": "Леса", "monolit": "Монолит", "taxta": "Доска"},
+# }
 
 
 @router.message(AdminOnly(), Command("total", prefix="/!"))
@@ -34,8 +35,8 @@ async def handle_total_command(message: types.Message):
     }[lang]
 
     for product_type, product_size, total_quantity in totals:
-        type_text = PRODUCT_TYPE_TRANSLATIONS[lang].get(product_type, product_type)
-        size_text = f" ({product_size})" if product_size else ""
+        type_text = PRODUCT_TYPE_LABEL[lang][product_type]
+        size_text = f" ({SIZE_LABEL[lang][product_size]})" if product_size else ""
         text += f"<b>{type_text}</b>{size_text}:  <u>{total_quantity}</u>\n"
 
     await message.answer(text)

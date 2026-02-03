@@ -99,7 +99,8 @@ async def generate_and_send_report(
 
 @router.callback_query(AdminOnly(), F.data.startswith("rent_report_range:"))
 async def rent_report_range_callback(call: types.CallbackQuery, state: FSMContext):
-    lang = await get_user_language(call.message)
+    lang = await get_user_language(call)
+    logging.info(f"RENT REPORT RANGE: {lang}")
 
     action = call.data.split(":")[1]  # today/week/month/year/custom
 
@@ -109,7 +110,7 @@ async def rent_report_range_callback(call: types.CallbackQuery, state: FSMContex
                 "uzl": "📅 Sana oralig‘ini yuboring:\n`DD.MM.YYYY DD.MM.YYYY`\nMasalan: `01.01.2026 10.01.2026`",
                 "uzk": "📅 Сана оралиғини юборинг:\n`ДД.ММ.ГГГГ ДД.ММ.ГГГГ`\nМасалан: `01.01.2026 10.01.2026`",
                 "rus": "📅 Укажите диапазон дат:\n`ДД.ММ.ГГГГ ДД.ММ.ГГГГ`\nНапример: `01.01.2026 10.01.2026`",
-            }.get(lang),
+            }.get(lang, "📅 Сана оралиғини юборинг:\n`ДД.ММ.ГГГГ ДД.ММ.ГГГГ`\nМасалан: `01.01.2026 10.01.2026`"),
             parse_mode="Markdown"
         )
         await state.set_state(ReportState.get_start_end_dates)
@@ -151,17 +152,19 @@ async def rent_report_dates_input(message: types.Message, state: FSMContext):
 
     try:
         start_date, end_date = parse_two_dates(message.text, lang)
-    except ValueError as e:
+    except ValueError as a:
+        logging.info(f"REPORT DATES INPUT EXCEPTION: {a}")
         await message.answer(
             {
-                "uzl": f"❌ Xatolik: {e}\n\n✅ To‘g‘ri format:\n`01.01.2026 10.01.2026`",
-                "uzk": f"❌ Хатолик: {e}\n\n✅ Тўғри формат:\n`01.01.2026 10.01.2026`",
-                "rus": f"❌ Ошибка: {e}\n\n✅ Правильный формат:\n`01.01.2026 10.01.2026`",
+                "uzl": f"❌ Xatolik! Noto'g'ri ma'lumot yuborildi.\n\n✅ To‘g‘ri format:\n`01.01.2026 10.01.2026`",
+                "uzk": f"❌ Хатолик! Нотўғри маълумот юборилди.\n\n✅ Тўғри формат:\n`01.01.2026 10.01.2026`",
+                "rus": f"❌ Ошибка! Отправлена неверная информация.\n\n✅ Правильный формат:\n`01.01.2026 10.01.2026`",
             }[lang],
             parse_mode="Markdown"
         )
         return
-    except Exception:
+    except Exception as e:
+        logging.info(f"REPORT DATES INPUT EXCEPTION: {e}")
         await message.answer(
             {
                 "uzl": "❌ Sana formati noto‘g‘ri.\n\n✅ To‘g‘ri format:\n`01.01.2026 10.01.2026`",

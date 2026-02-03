@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -77,7 +79,8 @@ async def handle_entering_quantity(message: types.Message, state: FSMContext):
 
 @router.callback_query(F.data.startswith("payment_"))
 async def handle_payment_status(call: types.CallbackQuery, state: FSMContext):
-    lang = await get_user_language(call.message)
+    lang = await get_user_language(call)
+    logging.info(f"PAYMENT STATUS CALL MESSAGE: {call.message}")
     data = await state.get_data()
     rent_id = data.get("rent_id")
 
@@ -107,8 +110,7 @@ async def handle_payment_status(call: types.CallbackQuery, state: FSMContext):
             "uzl": f"To‘lov holati yangilandi: {payment_status.value}",
             "uzk": f"Тўлов ҳолати янгиланди: {payment_status.value}",
             "rus": f"Статус оплаты обновлён: {payment_status.value}",
-        }[lang]
+        }.get(lang, "Тўлов ҳолати янгиланди: {payment_status.value}")
     )
 
     await state.clear()
-

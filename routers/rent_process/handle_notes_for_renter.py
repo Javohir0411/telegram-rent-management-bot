@@ -44,9 +44,15 @@ async def handle_notes_for_renter(message: types.Message, state: FSMContext):
         product_name = f"{PRODUCT_TYPE_LABEL[lang][rent.product.product_type]}"
         if rent.product.product_size:
             product_name += f" ({SIZE_LABEL[lang][rent.product.product_size]})"
-        days = (rent.end_date - rent.start_date).days
+        if rent.end_date is not None:
+            days = (rent.end_date - rent.start_date).days + 1
+            if days < 1:
+                days = 1
+            days_text = f"<u>{days}</u>"
+        else:
+            days_text = "<i>очиқ (тугаш санаси киритилмаган)</i>"
         line = f"<b>{product_name}</b> — <u>{rent.quantity}</u> дона\n"
-        line += f"<b>Ижара кунлари:</b> <u>{days}</u>\n"
+        line += f"<b>Ижара кунлари:</b> {days_text}\n"
         line += f"<b>Маҳсулот нархи:</b> <u>{rent.product_price}</u> сўм\n"
         line += f"<b>Етказиб бериш хизмати:</b> <u>{rent.delivery_price}</u> сўм\n"
         line += f"<b>Жами:</b> <u>{rent.rent_price}</u> сўм\n"
@@ -75,19 +81,19 @@ async def handle_notes_for_renter(message: types.Message):
     lang = await get_user_language(message)
     await message.reply(
         {
-            "uzl": "<b>Eslatma/Izoh</b> faqat matn ko'rinishida saqlanadi.\n"
+            "uzl": "Eslatma/Izoh faqat matn ko'rinishida saqlanadi.\n"
                    "Ma'lumot saqlamoqchi bo'lsangiz, iltimos, faqat matn kiriting.\n"
                    "Agar, xohlamasangiz `Skip` deb yozib yuboring",
 
-            "uzk": "<b>Эслатма/Изоҳ</b> фақат матн кўринишида сақланади.\n"
+            "uzk": "Эслатма/Изоҳ фақат матн кўринишида сақланади.\n"
                    "Маълумот сақламоқчи бўлсангиз, илтимос, фақат матн киритинг.\n"
                    "Агар, хоҳламасангиз `Skip` деб ёзиб юборинг",
 
-            "rus": "<b>Примечание/комментарий</b> будет сохранено только в текстовом виде.\n"
+            "rus": "Примечание/комментарий будет сохранено только в текстовом виде.\n"
                    "Если вы хотите сохранить информацию, пожалуйста, введите только текст.\n"
                    "Если вы не хотите этого делать, введите `Skip`.",
 
-        }.get(lang, "<b>Эслатма/Изоҳ</b> фақат матн кўринишида сақланади.\n"
+        }.get(lang, "Эслатма/Изоҳ фақат матн кўринишида сақланади.\n"
                     "Маълумот сақламоқчи бўлсангиз, илтимос, фақат матн киритинг.\n"
                     "Агар, хоҳламасангиз `Skip` деб ёзиб юборинг"),
         reply_markup=types.ReplyKeyboardRemove(),

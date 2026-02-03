@@ -17,6 +17,7 @@ class RentStatus(StatesGroup):
     renter_fullname = State()
     renter_phone_number = State()
     renter_passport_info = State()
+    date_mode = State()
     start_date = State()
     end_date = State()
     location_request = State()

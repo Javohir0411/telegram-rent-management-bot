@@ -6,6 +6,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL, SIZE_LABEL
 from database.session import async_session_maker
 from db.models import Rent, User
 from utils.enums import RentStatusEnum
@@ -103,10 +104,10 @@ async def send_expired_rent_notification(bot: Bot):
             total_sum = 0
 
             for rent in rents_list:
-                line = f"{rent.product.product_type}"
+                line = f"{PRODUCT_TYPE_LABEL[lang][rent.product.product_type]}"
 
                 if rent.product.product_size:
-                    line += f" ({rent.product.product_size})"
+                    line += f" ({SIZE_LABEL[lang][rent.product.product_size]})"
 
                 line += f" — {rent.quantity} dona\n"
                 line += f"{lbl['product_price']}: {rent.product_price} so'm\n"

@@ -3,21 +3,26 @@ from sqlalchemy import (
     String,
     Integer,
     BigInteger,
-    DateTime,
     func,
     ForeignKey,
     Date,
-    Enum, Text, Float, Boolean, UniqueConstraint,
+    Enum,
+    Text,
+    Float,
+    Boolean,
 
 )
 from sqlalchemy.orm import relationship
 
 from database.base import Base
-from utils.enums import RentStatusEnum, ProductTypeEnum, PaymentStatusEnum, ProductSizeEnum
+from utils.enums import (
+    RentStatusEnum,
+    ProductTypeEnum,
+    PaymentStatusEnum,
+    ProductSizeEnum
+)
 
 
-#
-#
 class User(Base):
     __tablename__ = "users"
 
@@ -65,7 +70,7 @@ class Rent(Base):
 
     quantity = Column(Integer, nullable=False)
     start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=True)
 
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)

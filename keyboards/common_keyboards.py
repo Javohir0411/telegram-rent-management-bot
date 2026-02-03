@@ -1,3 +1,4 @@
+from multiprocessing.forkserver import read_signed
 from typing import Iterable
 
 from bot_strings.enum_str import SIZE_LABEL
@@ -30,7 +31,9 @@ def build_select_keyboard(options: Iterable[str]) -> ReplyKeyboardMarkup:
     builder.adjust(1)
     return builder.as_markup(resize_keyboard=True)
 
+
 LESA_SIZES = (ProductSizeEnum.katta, ProductSizeEnum.orta, ProductSizeEnum.kichik)
+
 
 def build_lesa_keyboard(lang: str):
     return build_select_keyboard({SIZE_LABEL[lang][e]: e for e in LESA_SIZES})
@@ -65,4 +68,17 @@ def build_yes_or_no_kb() -> ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
     builder.button(text="Yes")
     builder.button(text="No")
+    return builder.as_markup(resize_keyboard=True)
+
+
+def skip_rent_end_date(lang: str):
+    builder = ReplyKeyboardBuilder()
+    builder.button(
+        text={
+            "uzl": "O'tkazib yuborish ⏭️",
+            "uzk": "Ўтказиб юбориш ⏭️",
+            "rus": "Пропустить ⏭️",
+        }.get(lang, "Ўтказиб юбориш ⏭️"),
+        resize_keyboard=True,
+    )
     return builder.as_markup(resize_keyboard=True)
