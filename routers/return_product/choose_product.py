@@ -56,12 +56,29 @@ async def product_selected(message: types.Message, state: FSMContext):
             return
 
         await state.update_data(rent_id=rent.id)
-        await message.answer(
-            {
-                "uzl": f"Qancha mahsulot qaytarildi? (max {rent.quantity})",
-                "uzk": f"Қанча маҳсулот қайтарилди? (max {rent.quantity})",
-                "rus": f"Сколько товаров было возвращено? (max {rent.quantity})",
-            }[lang],
-            reply_markup=types.ReplyKeyboardRemove()
-        )
-        await state.set_state(ReturnProduct.entering_quantity)
+        if rent.end_date is None:
+            await message.answer(
+                {
+                    "uzl": "Tugash sanasini kiriting (`DD.MM.YYYY`)\nMasalan: `01.01.2026`",
+                    "uzk": "Тугаш санасини киритинг (`DD.MM.YYYY`)\nМасалан: `01.01.2026`",
+                    "rus": "Введите дату окончания (`DD.MM.YYYY`)\nНапример: `01.01.2026`",
+                }[lang],
+                reply_markup=types.ReplyKeyboardRemove(),
+                parse_mode="Markdown",
+            )
+            await state.set_state(ReturnProduct.entering_end_date)
+        else:
+            # ✅ end_date AVVALDAN BOR → so‘ramaymiz
+            await state.update_data(return_end_date=rent.end_date)
+            await message.answer(
+                {
+                    "uzl": f"Tugash sanasi allaqachon mavjud: {rent.end_date}\n"
+                           "Qancha mahsulot qaytarildi?",
+                    "uzk": f"Тугаш санаси мавжуд: {rent.end_date}\n"
+                           "Қанча маҳсулот қайтарилди?",
+                    "rus": f"Дата окончания уже задана: {rent.end_date}\n"
+                           "Сколько товара вернули?",
+                }[lang],
+                reply_markup=types.ReplyKeyboardRemove()
+            )
+            await state.set_state(ReturnProduct.entering_quantity)

@@ -1,4 +1,4 @@
-from utils.enums import ProductSizeEnum, ProductTypeEnum
+from utils.enums import ProductSizeEnum, ProductTypeEnum, PaymentStatusEnum, RentStatusEnum
 
 SIZE_LABEL = {
     "uzl": {
@@ -49,4 +49,36 @@ PRODUCT_TYPE_LABEL = {
         ProductTypeEnum.taxta_opalubka: "Дощатая опалубка",
         ProductTypeEnum.metal_opalubka: "Металлическая опалубка",
     }
+}
+PAYMENT_STATUS = {
+    "uzl": {
+        PaymentStatusEnum.not_paid.name: "To'lanmagan ❌",
+        PaymentStatusEnum.part_paid.name: "Qisman ⚠️",
+        PaymentStatusEnum.full_paid.name: "To'liq ✅"
+    },
+    "uzk": {
+        PaymentStatusEnum.full_paid.name: "Тўлиқ ✅",
+        PaymentStatusEnum.part_paid.name: "Қисман ⚠️",
+        PaymentStatusEnum.not_paid.name: "Тўланмаган ❌",
+    },
+    "rus": {
+        PaymentStatusEnum.not_paid.name: "Без оплаты ❌",
+        PaymentStatusEnum.part_paid.name: "Частично ⚠️",
+        PaymentStatusEnum.full_paid.name: "Полностью ✅",
+    },
+}
+
+RENT_STATUS = {
+    "uzl": {
+        RentStatusEnum.active.name: "Ijarada",
+        RentStatusEnum.returned.name: "Qaytarilgan",
+    },
+    "uzk": {
+        RentStatusEnum.active.name: "Ижарада",
+        RentStatusEnum.returned.name: "Қайтарилган",
+    },
+    "rus": {
+        RentStatusEnum.active.name: "В аренду",
+        RentStatusEnum.returned.name: "Вернулся"
+    },
 }

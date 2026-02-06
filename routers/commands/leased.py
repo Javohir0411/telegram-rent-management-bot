@@ -1,65 +1,10 @@
-# import logging
-#
-# from aiogram import Router, F, types
-# from aiogram.filters import Command
-#
-# from bot_strings.leased_command_strings import Leased
-# from database.session import get_user_language
-# from utils.enums import RentStatusEnum
-# from utils.get_leased_rent import get_leased_rents
-#
-# router = Router(name=__name__)
-#
-# RENT_STATUS_LABEL = {
-#     RentStatusEnum.active: "Ижарада",
-#     RentStatusEnum.returned: "Қайтарилган"
-# }
-#
-#
-# @router.message(Command("leased", prefix="/!"))
-# async def handle_leased_command(message: types.Message):
-#     rents = await get_leased_rents()
-#     lang = await get_user_language(message)
-#     if not rents:
-#         text = Leased.NOT_PRODUCT_IN_RENT[lang]
-#         await message.answer(text=text)
-#         return
-#
-#     if lang == "uzl":
-#         text = "📦 Ijaraga berilgan mahsulotlar:\n\n"
-#     elif lang == "uzk":
-#         text = "📦 Ижарага берилган маҳсулотлар:\n\n"
-#     elif lang == "rus":
-#         text = "📦 Продукты в аренду:\n\n"
-#
-#     # Har bir rentni qo‘shish (tashqarida!)
-#     for i, rent in enumerate(rents, start=1):
-#         product = rent.product
-#         renter = rent.renter
-#         size = f" ({product.product_size.value})" if product.product_size else ""
-#         status_label = RENT_STATUS_LABEL[rent.rent_status]
-#
-#         start_date = rent.start_date.strftime("%d-%m-%Y")
-#         end_date = rent.end_date.strftime("%d-%m-%Y")
-#
-#         rent_text = Leased.RESULT[lang].format(
-#             rent=rent,
-#             renter=renter,
-#             status_label=status_label,
-#             start_date=start_date,
-#             end_date=end_date
-#         )
-#
-#         text += f"<b>{i}) {product.product_type.value}{size}</b>{rent_text}"
-#
-#     logging.info(f"LEASED RESULT: {text}")
-#     await message.answer(text=text)
-
 # leased_handler.py
 import logging
 from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL, SIZE_LABEL
 from bot_strings.leased_command_strings import Leased
 from database.session import get_user_language
 from utils.admin_only import AdminOnly
@@ -78,18 +23,17 @@ RENT_STATUS_LABEL = {
 RENT_PER_PAGE = 3  # har sahifada nechta rent ko‘rsatiladi
 
 
-
 def build_pagination_keyboard(total_items: int, current_page: int) -> InlineKeyboardMarkup | None:
     total_pages = (total_items + RENT_PER_PAGE - 1) // RENT_PER_PAGE
     buttons = []
 
     if current_page > 1:
         buttons.append(
-            InlineKeyboardButton(text="⬅️ Oldingi", callback_data=f"leased_page:{current_page-1}")
+            InlineKeyboardButton(text="⬅️ Oldingi", callback_data=f"leased_page:{current_page - 1}")
         )
     if current_page < total_pages:
         buttons.append(
-            InlineKeyboardButton(text="Keyingi ➡️", callback_data=f"leased_page:{current_page+1}")
+            InlineKeyboardButton(text="Keyingi ➡️", callback_data=f"leased_page:{current_page + 1}")
         )
 
     if not buttons:
@@ -98,17 +42,16 @@ def build_pagination_keyboard(total_items: int, current_page: int) -> InlineKeyb
     return InlineKeyboardMarkup(inline_keyboard=[buttons])
 
 
-
 def format_rent_text(rents_slice, lang: str) -> str:
     text = ""
     for i, rent in enumerate(rents_slice, start=1):
         product = rent.product
         renter = rent.renter
-        size = f" ({product.product_size.value})" if product.product_size else ""
+
         status_label = RENT_STATUS_LABEL[rent.rent_status]
 
-        start_date = rent.start_date.strftime("%d-%m-%Y")
-        end_date = rent.end_date.strftime("%d-%m-%Y")
+        start_date = rent.start_date.strftime("%d-%m-%Y") if rent.start_date else ""
+        end_date = rent.end_date.strftime("%d-%m-%Y") if rent.end_date else " — "
 
         rent_text = Leased.RESULT[lang].format(
             rent=rent,
@@ -118,7 +61,10 @@ def format_rent_text(rents_slice, lang: str) -> str:
             end_date=end_date
         )
 
-        text += f"<b>{i}) {product.product_type.value}{size}</b>{rent_text}"
+        product_name = PRODUCT_TYPE_LABEL[lang][product.product_type]  # enum bilan ishlating
+        size_text = f" ({SIZE_LABEL[lang][product.product_size]})" if product and product.product_size else ""
+
+        text += f"<b>{i}) {product_name}{size_text}</b>{rent_text}"
     return text
 
 
@@ -149,6 +95,7 @@ async def handle_leased_command(message: types.Message):
 
     await message.answer(text=text, reply_markup=kb, parse_mode="HTML")
 
+
 @router.message(Command("leased", prefix="/!"))
 async def handle_leased_command_not_admin(message: types.Message):
     lang = await get_user_language(message)
@@ -160,10 +107,12 @@ async def handle_leased_command_not_admin(message: types.Message):
         }.get(lang, "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун")
     )
 
+
 @router.callback_query(lambda c: c.data.startswith("leased_page:"), AdminOnly())
 async def handle_leased_pagination(callback: CallbackQuery):
     rents = await get_leased_rents()
-    lang = await get_user_language(callback.message)
+    lang = await get_user_language(callback)
+    logging.info(f"LEASED PAGINATION: {lang}")
 
     page = int(callback.data.split(":")[1])
     start_idx = (page - 1) * RENT_PER_PAGE
@@ -182,7 +131,8 @@ async def handle_leased_pagination(callback: CallbackQuery):
     await callback.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
     await callback.answer()
 
-@router.callback_query(lambda c: c.data.startswith("leased_page:"), AdminOnly())
+
+@router.callback_query(lambda c: c.data.startswith("leased_page:"))
 async def handle_leased_pagination_not_admin(callback: CallbackQuery):
     lang = await get_user_language(callback.message)
     await message.answer(

@@ -61,6 +61,7 @@ async def save_rent_from_fsm(fsm_data: dict):
                 renter_id=renter.id,
                 product_id=product.id,
                 quantity=item["quantity"],
+                returned_quantity=0,
                 start_date=start_date,  # Date
                 end_date=end_date,  # Date yoki None
                 latitude=fsm_data.get("renter_latitude"),

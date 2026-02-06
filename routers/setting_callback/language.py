@@ -42,7 +42,7 @@ async def change_language(
     await call.message.edit_text(
         {
             "uzl": f"✅ Til muvaffaqiyatli o‘zgartirildi: {lang_enum.value}",
-            "uzk": f"✅ Тил муваффақиятли ўзгартирилди:: {lang_enum.value}",
+            "uzk": f"✅ Тил муваффақиятли ўзгартирилди: {lang_enum.value}",
             "rus": f"✅ Язык успешно изменен: {lang_enum.value}",
         }[lang_name]
     )

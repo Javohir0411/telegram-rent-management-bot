@@ -87,38 +87,65 @@ def build_excel(lang: str, rents: List["Rent"], start_date: date, end_date: date
     start_data_row = 4
     client_totals = defaultdict(float)
 
+    logging.info(f"RENTS: {rents}")
     for row_i, r in enumerate(rents, start=start_data_row):
         renter = r.renter
+        print(f"{row_i} RENTER: {renter}")
         product = r.product
+        print(f"{row_i} PRODUCT: {product}")
 
         renter_name = renter.renter_fullname if renter else ""
+        print(f"{row_i} RENTER NAME: {renter_name}")
         renter_phone = renter.renter_phone_number if renter else ""
+        print(f"{row_i} RENTER PHONE: {renter_phone}")
         renter_passport = renter.renter_passport_info if renter else ""
+        print(f"{row_i} RENTER PASS: {renter_passport}")
 
         product_type = str(PRODUCT_TYPE_LABEL[lang][product.product_type]) if product else ""
+        print(f"{row_i} PRODUCT TYPE: {product_type}")
         product_size = str(SIZE_LABEL[lang][product.product_size]) if product and product.product_size else ""
+        print(f"{row_i} PRODUCT SIZE: {product_size}")
         price_per_day = float(product.price_per_day or 0) if product else 0
+        print(f"{row_i} PRICE PER DAY: {price_per_day}")
         status = str(r.status or None)
+        print(f"{row_i} STATUS: {status}")
         rent_status = str(r.rent_status or None)
+        print(f"{row_i} RENT STATUS: {rent_status}")
 
         qty = int(r.quantity or 0)
+        print(f"{row_i} QUANTITY: {qty}")
 
         sd = r.start_date.date() if isinstance(r.start_date, datetime) else r.start_date
+        print(f"{row_i} START DATE: {sd}")
         ed = r.end_date.date() if isinstance(r.end_date, datetime) else r.end_date
+        print(f"{row_i} END DATE: {ed}")
         cd = r.created_at.date() if isinstance(r.created_at, datetime) else r.created_at
+        print(f"{row_i} CREATED AT DATE: {cd}")
 
-        days = (ed - sd).days
-        if days <= 0:
-            days = 1
+        if ed is None:
+            days = 0
+        else:
+            days = (ed - sd).days + 1
+            if days < 1:
+                days = 1
 
-        product_price = float(r.product_price or 0)
         delivery_price = float(r.delivery_price or 0)
+        print(f"{row_i} DELIVERY PRICE: {delivery_price}")
+        print(f"{row_i} {r.renter.renter_fullname} - {product.product_type} PRICE: {r.product_price}")
+        # Hisobot qayta hisoblamaydi:
+        if ed is None:
+            product_price = 0.0
+            print(f"{row_i} END DATE IS NONE: {product_price}")
+        else:
+            product_price = float(r.product_price or 0)
+            print(f"{row_i} PRODUCT PRICE: {product_price}")
 
-        # ✅ TO‘G‘RI UMUMIY HISOB
         total = product_price + delivery_price
+        print(f"{row_i} TOTAL: {total}")
 
         client_totals[renter_name] += total
 
+        ed_cell = ed if ed is not None else ""
         ws.append([
             r.id,
             renter_name,
@@ -128,7 +155,7 @@ def build_excel(lang: str, rents: List["Rent"], start_date: date, end_date: date
             product_size,
             qty,
             sd,
-            ed,
+            ed_cell,
             cd,
             days,
             price_per_day,
@@ -147,7 +174,7 @@ def build_excel(lang: str, rents: List["Rent"], start_date: date, end_date: date
     # =======================
     # FORMATS
     # =======================
-    money_cols = [12, 14, 15, 16, 17]
+    money_cols = [12, 15, 16, 17]
     for r in range(start_data_row, ws.max_row + 1):
         for c in money_cols:
             ws.cell(row=r, column=c).number_format = '#,##0.00'

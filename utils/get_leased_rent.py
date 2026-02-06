@@ -10,7 +10,7 @@ async def get_leased_rents():
     async with async_session_maker() as session:
         query = (
             select(Rent)
-            .where(Rent.rent_status == RentStatusEnum.active.name)
+            .where(Rent.rent_status == RentStatusEnum.active)
             .options(
                 selectinload(Rent.product),
                 selectinload(Rent.renter)

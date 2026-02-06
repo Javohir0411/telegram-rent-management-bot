@@ -8,6 +8,7 @@ from utils.get_total_product import get_total_product
 
 router = Router(name=__name__)
 
+
 # PRODUCT_TYPE_TRANSLATIONS = {
 #     "uzl": {"lesa": "Леса", "monolit": "Монолит устун", "taxta": "Тахта"},
 #     "uzk": {"lesa": "Леса", "monolit": "Монолит устун", "taxta": "Тахта"},
@@ -39,7 +40,11 @@ async def handle_total_command(message: types.Message):
         size_text = f" ({SIZE_LABEL[lang][product_size]})" if product_size else ""
         text += f"<b>{type_text}</b>{size_text}:  <u>{total_quantity}</u>\n"
 
-    await message.answer(text)
+    await message.answer(
+        text=text,
+        reply_markup=types.ReplyKeyboardRemove()
+    )
+
 
 @router.message(Command("total", prefix="/!"))
 async def handle_total_command_not_admin(message: types.Message):

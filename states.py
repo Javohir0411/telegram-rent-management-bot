@@ -27,6 +27,7 @@ class RentStatus(StatesGroup):
 class ReturnProduct(StatesGroup):
     choosing_renter = State()
     choosing_product = State()
+    entering_end_date = State()
     entering_quantity = State()
     confirming = State()
 
@@ -34,3 +35,11 @@ class ReturnProduct(StatesGroup):
 class ReportState(StatesGroup):
     get_start_end_dates= State()
     send_report = State()
+
+from aiogram.fsm.state import StatesGroup, State
+
+class PayUpdateState(StatesGroup):
+    waiting_renter_query = State()   # FIO/telefon/passport qidiruv matni kutiladi
+    choosing_renter = State()        # renter list/pagination bosqichi
+    choosing_rent = State()          # rent list/pagination bosqichi
+    choosing_payment_status = State()# payment status tanlash bosqichi

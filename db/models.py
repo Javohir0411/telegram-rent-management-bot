@@ -69,6 +69,7 @@ class Rent(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
 
     quantity = Column(Integer, nullable=False)
+    returned_quantity = Column(Integer, nullable=False, server_default="0")
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
 
