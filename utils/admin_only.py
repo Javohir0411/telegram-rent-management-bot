@@ -1,9 +1,12 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
 
+from database.config import get_allowed_tg_ids
+
 # admin telegram_id lar
-ALLOWED_TG_IDS = {95889727, 1891727351}
-# ALLOWED_TG_IDS = {11111111, 2222222222}
+
+ALLOWED_TG_IDS = get_allowed_tg_ids()
+print(get_allowed_tg_ids())
 
 
 class AdminOnly(BaseFilter):
