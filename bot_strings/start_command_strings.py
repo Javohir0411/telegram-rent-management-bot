@@ -66,6 +66,6 @@ class StartStrings:
 
     EXISTING_USER = {
         LanguageEnum.uzl.name: "❗Siz avval ro‘yxatdan o‘tgansiz.\nXizmatlar bilan tanishish uchun /help buyrug'ini bering.",
-        LanguageEnum.uzk.name: "❗Сиз аввал рўйхатдан ўтгансиз.\nХизматлар билан танишиш учун /ҳелп буйруғини беринг.",
+        LanguageEnum.uzk.name: "❗Сиз аввал рўйхатдан ўтгансиз.\nХизматлар билан танишиш учун /help буйруғини беринг.",
         LanguageEnum.rus.name: "❗Вы уже зарегистрированы.\nЧтобы узнать больше об услуге, введите /help.",
     }

@@ -9,6 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 class Settings(BaseSettings):
     DATABASE_URL: str
     bot_token: str
+    ALLOWED_TG_IDS: str = ""   # <<< qo‘shing
     model_config = SettingsConfigDict(
         # env_file="../.env",
         env_file=os.path.join(BASE_DIR, ".env"),

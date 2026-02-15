@@ -29,6 +29,7 @@ async def handle_command_rent(message: types.Message, state: FSMContext):
             select(User).where(User.telegram_id == message.from_user.id)
         )
         current_user = result.scalar_one_or_none()
+        logging.info(f"CURRENT USER: {current_user} | USER: {message.from_user.id}")
         await state.update_data(user_id=current_user.id)
 
         available_products = await get_available_products(session)
