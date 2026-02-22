@@ -58,6 +58,7 @@ async def save_rent_from_fsm(fsm_data: dict):
 
             rent = Rent(
                 user_id=fsm_data.get("user_id"),
+                # user_telegram_id=fsm_data.get("user_telegram_id"),
                 renter_id=renter.id,
                 product_id=product.id,
                 quantity=item["quantity"],

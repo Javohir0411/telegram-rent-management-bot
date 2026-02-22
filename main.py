@@ -17,7 +17,7 @@ async def schedule_daily(bot: Bot):
     """Tonggi 7 da har kuni send_expired_rent_notifications chaqirish."""
     while True:
         now = datetime.now()
-        target = datetime.combine(now.date(), time(2, 0))  # bugungi 7:00
+        target = datetime.combine(now.date(), time(17, 28))  # bugungi 7:00
         if now >= target:
             target += timedelta(days=1)  # agar 7:00dan keyin bo'lsa, ertaga
         sleep_seconds = (target - now).total_seconds()

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from bot_strings.enum_str import PRODUCT_TYPE_LABEL, SIZE_LABEL
+from database.config import get_allowed_tg_ids
 from database.session import async_session_maker
 from db.models import Rent, User
 from utils.enums import RentStatusEnum
@@ -133,7 +134,9 @@ async def send_expired_rent_notification(bot: Bot):
             text += f"🛂 {lbl['passport']}: {rents_list[0].renter.renter_passport_info}\n"
             text += f"📝 {lbl['notes']}: {rents_list[0].comment}"
 
-            try:
-                await bot.send_message(chat_id=1891727351, text=text)
-            except Exception as e:
-                logging.error(f"XABAR YUBORISHDA XATOLIK: {e}")
+            tg_ids = get_allowed_tg_ids()
+            for ids in tg_ids:
+                try:
+                    await bot.send_message(chat_id=ids, text=text)
+                except Exception as e:
+                    logging.error(f"XABAR YUBORISHDA XATOLIK: {e}")

@@ -6,7 +6,8 @@ from database.config import get_allowed_tg_ids
 # admin telegram_id lar
 
 ALLOWED_TG_IDS = get_allowed_tg_ids()
-print(get_allowed_tg_ids())
+print(f"ALLOWED_TG_IDS: {ALLOWED_TG_IDS}")
+print(f"get_allowed_tg_ids: {get_allowed_tg_ids()}")
 
 
 class AdminOnly(BaseFilter):
