@@ -1,1 +1,13 @@
+# venv
+env/
+venv/
+.venv/
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# dotenv
 .env
