@@ -1,22 +1,22 @@
-from enum import Enum, IntEnum, auto
+from enum import Enum, IntEnum, auto, StrEnum
 from sys import prefix
 
 from aiogram.filters.callback_data import CallbackData
 
 
-class LanguageEnum(str, Enum):
+class LanguageEnum(StrEnum):
     uzl = "O'zbek tili (lotin)"
     uzk = "Ўзбек тили (крилл)"
     rus = "Русский язык"
 
 
-class ProductTypeEnum(str, Enum):
+class ProductTypeEnum(StrEnum):
     lesa = "lesa"
     monolit = "monolit"
     taxta_opalubka = "taxta_opalubka"
     metal_opalubka = "metal_opalubka"
 
-class ProductSizeEnum(str, Enum):
+class ProductSizeEnum(StrEnum):
     katta = "katta"
     orta = "orta"
     kichik = "kichik"
@@ -26,12 +26,12 @@ class ProductSizeEnum(str, Enum):
     one_meter = "one_meter"
 
 
-class RentStatusEnum(str, Enum):
+class RentStatusEnum(StrEnum):
     active = "Ижарада"
     returned = "Қайтарилган"
 
 
-class PaymentStatusEnum(str, Enum):
+class PaymentStatusEnum(StrEnum):
     full_paid = "Тўлиқ ✅"
     part_paid = "Қисман ⚠️"
     not_paid = "Тўланмаган ❌"
