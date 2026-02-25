@@ -9,7 +9,7 @@ from sqlalchemy import (
     Enum,
     Text,
     Float,
-    Boolean,
+    Boolean, Index,
 
 )
 from sqlalchemy.orm import relationship
@@ -28,6 +28,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     telegram_id = Column(BigInteger, unique=True, index=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
     user_fullname = Column(String, nullable=False)
     user_phone_number = Column(String, unique=True, nullable=False)
     selected_language = Column(String, nullable=False)
@@ -41,6 +42,7 @@ class Renter(Base):
     __tablename__ = "renter"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
     renter_fullname = Column(String, nullable=False)
     renter_phone_number = Column(String, unique=False, nullable=False)
     renter_passport_info = Column(String, nullable=True)
@@ -51,6 +53,7 @@ class Renter(Base):
 class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
     product_type = Column(Enum(ProductTypeEnum, name="product_type_enum"), nullable=False)
     product_size = Column(Enum(ProductSizeEnum, name="product_size_enum"), nullable=True)
     total_quantity = Column(Integer, nullable=False)
@@ -63,6 +66,7 @@ class Rent(Base):
     __tablename__ = "rents"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # yangi field
     renter_id = Column(Integer, ForeignKey("renter.id"), nullable=False)
@@ -90,3 +94,8 @@ class Rent(Base):
     created_at = Column(Date, server_default=func.current_date())  # Avtomatik kiritish vaqtini saqlash
     updated_at = Column(Date, server_default=func.current_date(),
                         onupdate=func.now())  # Yangilangan vaqtini avtomatik saqlash
+
+
+Index("ix_renter_tenant_phone", Renter.tenant_id, Renter.renter_phone_number)
+Index("ix_product_tenant_type_size", Product.tenant_id, Product.product_type, Product.product_size)
+Index("ix_rent_tenant_user", Rent.tenant_id, Rent.user_id)

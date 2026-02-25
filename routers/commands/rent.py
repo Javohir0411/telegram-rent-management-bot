@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 router = Router(name=__name__)
 
 
-@router.message(AdminOnly(), Command("rent", prefix="/!"))
+@router.message(Command("rent", prefix="/!"))
 async def handle_command_rent(message: types.Message, state: FSMContext):
     lang = await get_user_language(message)
     logging.info(f"COMMAND RENT UCHUN KELGAN TIL: {lang}")
@@ -74,18 +74,6 @@ async def handle_command_rent(message: types.Message, state: FSMContext):
         text=message_text,
         reply_markup=build_select_keyboard(kb),
 
-    )
-
-
-@router.message(Command("rent", prefix="/!"))
-async def handle_command_rent_not_admin(message: types.Message):
-    lang = await get_user_language(message)
-    await message.answer(
-        {
-            "uzl": "Sizga ruxsat yo'q ❌\nMa'lumotlar faqat admin uchun",
-            "uzk": "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун",
-            "rus": "Вам запрещено ❌\nИнформация только для администратора.",
-        }.get(lang, "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун")
     )
 
 

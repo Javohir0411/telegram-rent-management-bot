@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 router = Router(name=__name__)
 
 
-@router.message(AdminOnly(), CommandStart())
+@router.message( CommandStart())
 async def handle_command_start(message: types.Message, state: FSMContext):
     logging.info(f"FOYDALANUVCHI {message.from_user.id} /START COMMANDNI ISHGA TUSHIRDI ")
     await state.set_state(Register.language)

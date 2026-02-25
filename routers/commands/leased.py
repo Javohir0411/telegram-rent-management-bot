@@ -3,6 +3,7 @@ import logging
 from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyexpat.errors import messages
 
 from bot_strings.enum_str import PRODUCT_TYPE_LABEL, SIZE_LABEL
 from bot_strings.leased_command_strings import Leased
@@ -68,13 +69,14 @@ def format_rent_text(rents_slice, lang: str) -> str:
     return text
 
 
-@router.message(AdminOnly(), Command("leased", prefix="/!"))
+@router.message(Command("leased", prefix="/!"))
 async def handle_leased_command(message: types.Message):
-    rents = await get_leased_rents()
+    rents = await get_leased_rents(message)
     lang = await get_user_language(message)
 
     if not rents:
         await message.answer(Leased.NOT_PRODUCT_IN_RENT[lang])
+        logging.info(f"LEASED COMMAND BERGAN AMMO IJARASI YOQ TELEGRAM ID: {message.from_user.id}")
         return
 
     # Header
@@ -93,24 +95,14 @@ async def handle_leased_command(message: types.Message):
     text = header + format_rent_text(rents_slice, lang)
     kb = build_pagination_keyboard(total_items=len(rents), current_page=page)
 
+    tenant_ids = {r.tenant_id for r in rents}
+    logging.info(f"IJARAGA BERGAN ID VA TENANT ID: {tenant_ids | message.from_user.id}")
     await message.answer(text=text, reply_markup=kb, parse_mode="HTML")
 
 
-@router.message(Command("leased", prefix="/!"))
-async def handle_leased_command_not_admin(message: types.Message):
-    lang = await get_user_language(message)
-    await message.answer(
-        {
-            "uzl": "Sizga ruxsat yo'q ❌\nMa'lumotlar faqat admin uchun",
-            "uzk": "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун",
-            "rus": "Вам запрещено ❌\nИнформация только для администратора.",
-        }.get(lang, "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун")
-    )
-
-
-@router.callback_query(lambda c: c.data.startswith("leased_page:"), AdminOnly())
+@router.callback_query(lambda c: c.data.startswith("leased_page:"))
 async def handle_leased_pagination(callback: CallbackQuery):
-    rents = await get_leased_rents()
+    rents = await get_leased_rents(callback)
     lang = await get_user_language(callback)
     logging.info(f"LEASED PAGINATION: {lang}")
 
@@ -130,15 +122,3 @@ async def handle_leased_pagination(callback: CallbackQuery):
 
     await callback.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
     await callback.answer()
-
-
-@router.callback_query(lambda c: c.data.startswith("leased_page:"))
-async def handle_leased_pagination_not_admin(callback: CallbackQuery):
-    lang = await get_user_language(callback.message)
-    await message.answer(
-        {
-            "uzl": "Sizga ruxsat yo'q ❌\nMa'lumotlar faqat admin uchun",
-            "uzk": "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун",
-            "rus": "Вам запрещено ❌\nИнформация только для администратора.",
-        }.get(lang, "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун")
-    )

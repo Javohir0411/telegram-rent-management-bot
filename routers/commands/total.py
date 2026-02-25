@@ -16,7 +16,7 @@ router = Router(name=__name__)
 # }
 
 
-@router.message(AdminOnly(), Command("total", prefix="/!"))
+@router.message(Command("total", prefix="/!"))
 async def handle_total_command(message: types.Message):
     lang = await get_user_language(message)
     totals = await get_total_product()
@@ -43,16 +43,4 @@ async def handle_total_command(message: types.Message):
     await message.answer(
         text=text,
         reply_markup=types.ReplyKeyboardRemove()
-    )
-
-
-@router.message(Command("total", prefix="/!"))
-async def handle_total_command_not_admin(message: types.Message):
-    lang = await get_user_language(message)
-    await message.answer(
-        {
-            "uzl": "Sizga ruxsat yo'q ❌\nMa'lumotlar faqat admin uchun",
-            "uzk": "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун",
-            "rus": "Вам запрещено ❌\nИнформация только для администратора.",
-        }.get(lang, "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун")
     )

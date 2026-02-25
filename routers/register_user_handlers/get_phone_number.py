@@ -2,6 +2,7 @@ from aiogram.client import bot
 from aiogram.types import BotCommandScopeChat
 
 from bot_strings.bot_command import BotCommands
+from database.config import get_allowed_tg_ids
 from utils.get_user_from_db import get_user_by_telegram_or_phone
 from keyboards.get_phone_number import get_phone_number_kb
 from bot_strings.start_command_strings import StartStrings
@@ -15,6 +16,9 @@ from aiogram.utils import markdown
 
 logging.basicConfig(level=logging.INFO)
 router = Router(name=__name__)
+
+ADMIN_IDS = set(get_allowed_tg_ids())
+ADMIN_TENANT_ID = 1
 
 
 @router.message(F.contact, Register.phone_number)
@@ -37,31 +41,22 @@ async def handle_phone_number(message: types.Message, state: FSMContext):
         if existing_user:
             lang = data.get("selected_language")
             message_text = StartStrings.EXISTING_USER[lang]
-
-            if lang == "uzl":
-                await message.answer(
-                    text=message_text,
-                    reply_markup=types.ReplyKeyboardRemove()
-                )
-            elif lang == "uzk":
-                await message.answer(
-                    message_text,
-                    reply_markup=types.ReplyKeyboardRemove()
-                )
-            elif lang == "rus":
-                await message.answer(
-                    message_text,
-                    reply_markup=types.ReplyKeyboardRemove()
-                )
+            await message.answer(
+                message_text,
+                reply_markup=types.ReplyKeyboardRemove()
+            )
             await state.clear()
             return
+
+        tenant_id = ADMIN_TENANT_ID if telegram_id in ADMIN_IDS else None
 
         await create_user(
             db=session,
             telegram_id=telegram_id,
             user_fullname=data["user_fullname"],
             user_phone_number=data["user_phone_number"],
-            selected_language=data["selected_language"]
+            selected_language=data["selected_language"],
+            tenant_id=tenant_id,
         )
 
         await state.clear()
@@ -74,24 +69,10 @@ async def handle_phone_number(message: types.Message, state: FSMContext):
             user_phone_number=markdown.hbold(data["user_phone_number"]),
             user_fullname=markdown.hbold(data["user_fullname"]),
         )
-
-        if lang == "uzl":
-            await message.answer(
-                text=message_text,
-                reply_markup=types.ReplyKeyboardRemove()
-            )
-
-        elif lang == 'uzk':
-            await message.answer(
-                text=message_text,
-                reply_markup=types.ReplyKeyboardRemove()
-            )
-
-        elif lang == 'rus':
-            await message.answer(
-                text=message_text,
-                reply_markup=types.ReplyKeyboardRemove()
-            )
+        await message.answer(
+            text=message_text,
+            reply_markup=types.ReplyKeyboardRemove()
+        )
 
 
 @router.message(Register.phone_number)
