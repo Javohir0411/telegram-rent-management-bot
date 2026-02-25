@@ -56,7 +56,13 @@ async def generate_and_send_report(
             await message.answer("❗Сиз базада рўйхатдан ўтмагансиз.")
             return
 
-        rents = await get_rents_for_report(session, user.id, start_date, end_date)
+        rents = await get_rents_for_report(
+            session=session,
+            tenant_id=user.tenant_id,  # ✅ shu yerda tenant olinadi
+            user_db_id=user.id,
+            start_date=start_date,
+            end_date=end_date
+        )
 
     if not rents:
         await message.answer(
@@ -97,7 +103,7 @@ async def generate_and_send_report(
     await state.clear()
 
 
-@router.callback_query(AdminOnly(), F.data.startswith("rent_report_range:"))
+@router.callback_query(F.data.startswith("rent_report_range:"))
 async def rent_report_range_callback(call: types.CallbackQuery, state: FSMContext):
     lang = await get_user_language(call)
     logging.info(f"RENT REPORT RANGE: {lang}")
@@ -146,7 +152,7 @@ def parse_two_dates(text: str, lang: str) -> tuple[date, date]:
     return d1, d2  # Natija
 
 
-@router.message(AdminOnly(), ReportState.get_start_end_dates)
+@router.message(ReportState.get_start_end_dates)
 async def rent_report_dates_input(message: types.Message, state: FSMContext):
     lang = await get_user_language(message)
 
@@ -177,14 +183,3 @@ async def rent_report_dates_input(message: types.Message, state: FSMContext):
 
     await generate_and_send_report(message, state, lang, start_date, end_date, requester_tg_id=message.from_user.id)
 
-
-@router.message(ReportState.get_start_end_dates)
-async def rent_report_dates_input_not_admin(message: types.Message):
-    lang = await get_user_language(message)
-    await message.answer(
-        {
-            "uzl": "Sizga ruxsat yo'q❌ \nMa'lumotlar faqat admin uchun",
-            "uzk": "Сизга рухсат йўқ ❌ \nМаълумотлар фақат админ учун",
-            "rus": "Вам запрещено ❌ \nИнформация только для администратора.",
-        }.get(lang, "Сизга рухсат йўқ ❌\nМаълумотлар фақат админ учун")
-    )

@@ -1,5 +1,4 @@
 import logging
-
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
@@ -9,116 +8,85 @@ from bot_strings.enum_str import PRODUCT_TYPE_LABEL
 from bot_strings.rent_command_strings import RentStrings
 from database.products.available_product import get_available_products
 from database.session import async_session_maker, get_user_language
-from db.models import User
-from keyboards.common_keyboards import build_select_keyboard, build_lesa_keyboard, build_taxta_keyboard, \
-    build_metal_keyboard
-# from keyboards.select_product_keyboard import build_products_reply_keyboard
+from keyboards.common_keyboards import build_select_keyboard, build_taxta_keyboard, build_metal_keyboard
 from states import RentStatus
-from utils.enums import ProductTypeEnum, ProductSizeEnum
-from utils.get_user_from_db import get_user_by_telegram_or_phone
+from utils.current_user import get_current_user
+from utils.enums import ProductTypeEnum
 
 router = Router(name=__name__)
 
 
 @router.message(RentStatus.product_choice)
 async def handle_selected_product(message: types.Message, state: FSMContext):
-    selected_product = message.text
     lang = await get_user_language(message)
-    available_types = set()
+    selected_label = (message.text or "").strip()
 
-    async with async_session_maker() as session:
-        result = await session.execute(
-            select(User).where(User.telegram_id == message.from_user.id)
-        )
-        current_user = result.scalar_one_or_none()
-        await state.update_data(user_id=current_user.id)
-
-        available_products = await get_available_products(session)
-        for product, remaining_quantity in available_products:
-            available_types.add(product.product_type.name)
-
-    if selected_product not in [PRODUCT_TYPE_LABEL[lang][product_type] for product_type in ProductTypeEnum]:
-        kb = [PRODUCT_TYPE_LABEL[lang][t] for t in available_types]
-        logging.info(f"KB: {kb}")
+    # 1) current user + tenant
+    current_user = await get_current_user(message)
+    if not current_user:
         await message.answer(
-            text="Илтимос, фақат қуйидаги тугмалардан танланг.",
-            reply_markup=build_select_keyboard(kb),
-
+            {"uzl": "Avval ro‘yxatdan o‘ting: /start",
+             "uzk": "Аввал рўйхатдан ўтинг: /start",
+             "rus": "Сначала зарегистрируйтесь: /start"}.get(lang, "Аввал ro‘yxatdan o‘ting: /start")
         )
         return
 
+    await state.update_data(user_id=current_user.id)
+
+    # 2) tenant bo'yicha available product types
+    async with async_session_maker() as session:
+        available_products = await get_available_products(session, tenant_id=current_user.tenant_id)
+
+    available_types = {p.product_type for p, _remaining in available_products}  # set[ProductTypeEnum]
+    allowed_labels = [PRODUCT_TYPE_LABEL[lang][t.value] for t in available_types]  # label list
+
+    # 3) User noto'g'ri matn yozsa — qayta keyboard
+    if selected_label not in allowed_labels:
+        await message.answer(
+            text={"uzl": "Iltimos, faqat quyidagi tugmalardan tanlang.",
+                  "uzk": "Илтимос, фақат қуйидаги тугмалардан танланг.",
+                  "rus": "Пожалуйста, выберите только одну из кнопок ниже."}.get(lang, "Илтимос, фақат қуйidagi тугмаларdan tanlang."),
+            reply_markup=build_select_keyboard(allowed_labels),
+        )
+        return
+
+    # 4) label -> enum mapping (LANG ichidagi labelni enumga aylantiramiz)
+    label_to_enum = {label: enum_value for enum_value, label in PRODUCT_TYPE_LABEL[lang].items()}
+    # enum_value bu sizning mappingda string bo'lishi mumkin (masalan "taxta_opalubka")
+    product_type_value = label_to_enum[selected_label]  # masalan: "taxta_opalubka"
+
+    # ProductTypeEnum ga aylantirib olamiz (xatoni oldini oladi)
+    product_type_enum = ProductTypeEnum(product_type_value)
+
     data = await state.get_data()
     rent_info = data.get("rent_info", [])
-    logging.info(f"SELECTED PRODUCT: {selected_product}")
-    label_to_enum = {
-        label: enum_member
-        for enum_member, label in PRODUCT_TYPE_LABEL[lang].items()
-    }
-    product_type_enum = label_to_enum[selected_product]  # ProductTypeEnum.taxta_opalubka
-    rent_info.append({
-        "product_type": product_type_enum.name,  # yoki .value
-    })
+    rent_info.append({"product_type": product_type_enum.value})
     await state.update_data(rent_info=rent_info)
 
-    quantity_string = RentStrings.INSERT_QUANTITY_PRODUCT[lang]
-    logging.info(f"QUANTITY STRING: {quantity_string}")
-
-    # if selected_product == ProductTypeEnum.lesa.value:
-    #     await state.set_state(RentStatus.lesa_size_choice)
-    #     if lang == "uzl":
-    #         size = "Iltimos, lesa uchun o'lcham kiriting:"
-    #     elif lang == "uzk":
-    #         size = "Илтимос, леса учун ўлчам киритинг:"
-    #     elif lang == "rus":
-    #         size = "Пожалуйста, укажите размер лесы:"
-    #
-    #     await message.answer(
-    #         text=size,
-    #         reply_markup=build_lesa_keyboard(lang)
-    #     )
-
-    if selected_product in [PRODUCT_TYPE_LABEL[lang][product_type.taxta_opalubka.value] for product_type in
-                            ProductTypeEnum]:
-        logging.info(f"SELECTED Pro PRODUCT: {selected_product}")
-        logging.info(f"PRODUCT TYPE LABEL [LANG]: {PRODUCT_TYPE_LABEL[lang]}")
+    # 5) Keyingi state
+    if product_type_enum == ProductTypeEnum.taxta_opalubka:
         await state.set_state(RentStatus.taxta_size_choice)
-        if lang == "uzl":
-            size = "Iltimos, taxta opalubka uchun o'lcham kiriting:"
-        elif lang == "uzk":
-            size = "Илтимос, тахта опалубка учун ўлчам киритинг:"
-        elif lang == "rus":
-            size = "Пожалуйста, укажите размер дощатая опалубка:"
+        size_text = {
+            "uzl": "Iltimos, taxta opalubka uchun o'lcham tanlang:",
+            "uzk": "Илтимос, тахта опалубка учун ўлчам танланг:",
+            "rus": "Выберите размер для дощатой опалубки:",
+        }.get(lang, "Илтимос, тахта опалубка учун ўлчам танланг:")
+        await message.answer(text=size_text, reply_markup=build_taxta_keyboard(lang))
+        return
 
-        await state.set_state(RentStatus.taxta_size_choice)
-        await message.answer(
-            text=size,
-            reply_markup=build_taxta_keyboard(lang)
-        )
-
-    elif selected_product in [PRODUCT_TYPE_LABEL[lang][product_type.metal_opalubka.value] for product_type in
-                              ProductTypeEnum]:
-
-        if lang == "uzl":
-            size = "Iltimos, metal opalubka uchun o'lcham kiriting:"
-        elif lang == "uzk":
-            size = "Илтимос, метал опалубка учун ўлчам киритинг:"
-        elif lang == "rus":
-            size = "Пожалуйста, укажите размер металлическая опалубка:"
-
+    if product_type_enum == ProductTypeEnum.metal_opalubka:
         await state.set_state(RentStatus.metal_size_choice)
-        await message.answer(
-            text=size,
-            reply_markup=build_metal_keyboard(lang)
-        )
+        size_text = {
+            "uzl": "Iltimos, metal opalubka uchun o'lcham tanlang:",
+            "uzk": "Илтимос, метал опалубка учун ўлчам танланг:",
+            "rus": "Выберите размер для металлической опалубки:",
+        }.get(lang, "Илтимос, метал опалубка учун ўлчам танланг:")
+        await message.answer(text=size_text, reply_markup=build_metal_keyboard(lang))
+        return
 
-
-
-    else:
-        # Monolit yoki Taxta → miqdor kiritish
-        await state.set_state(RentStatus.quantity)
-        await message.answer(
-            text=quantity_string,
-            reply_markup=ReplyKeyboardRemove()
-        )
-
-# Lesa-ni hozircha faqat bitta hajmi mavjud ekan, yangilari qo'shilganida o'lcham ham kiritiladi
+    # Monolit / Lesa (siz hozir lesa size ishlatmayapsiz) -> quantity
+    await state.set_state(RentStatus.quantity)
+    await message.answer(
+        text=RentStrings.INSERT_QUANTITY_PRODUCT[lang],
+        reply_markup=ReplyKeyboardRemove()
+    )

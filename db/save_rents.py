@@ -8,10 +8,15 @@ from utils.enums import RentStatusEnum, PaymentStatusEnum
 
 
 async def save_rent_from_fsm(fsm_data: dict):
+    tenant_id = fsm_data.get("tenant_id")
+    if tenant_id is None:
+        raise ValueError("FSM data ichida tenant_id yo'q. state.update_data(tenant_id=...) qiling.")
+
     async with async_session_maker() as session:  # type: AsyncSession
 
-        # 1️⃣ Renter saqlash
+        # 1) Renter saqlash (✅ tenant_id shart)
         renter = Renter(
+            tenant_id=tenant_id,
             renter_fullname=fsm_data["renter_fullname"],
             renter_phone_number=fsm_data["renter_phone_number"],
             renter_passport_info=fsm_data.get("passport_info"),
@@ -20,9 +25,8 @@ async def save_rent_from_fsm(fsm_data: dict):
         await session.flush()
 
         start_date = fsm_data["start_date"]
-        end_date = fsm_data.get("end_date")  # 🔑 MUHIM
+        end_date = fsm_data.get("end_date")
 
-        # days faqat FIXED rejimda bo‘ladi
         days = None
         if end_date is not None:
             days = (end_date - start_date).days + 1
@@ -35,10 +39,11 @@ async def save_rent_from_fsm(fsm_data: dict):
             else 0
         )
 
-        # 2️⃣ Rentlarni saqlash
+        # 2) Rentlarni saqlash (✅ tenant_id shart)
         for item in fsm_data["rent_info"]:
             query = (
                 select(Product)
+                .where(Product.tenant_id == tenant_id)  # ✅ product ham shu tenantniki
                 .where(Product.product_type == item["product_type"])
                 .where(
                     Product.product_size.is_(None)
@@ -50,21 +55,19 @@ async def save_rent_from_fsm(fsm_data: dict):
 
             product_price = None
             rent_price = None
-
-            # 🔑 Faqat FIXED rejimda hisoblanadi
             if days is not None:
                 product_price = item["quantity"] * (product.price_per_day or 0) * days
                 rent_price = product_price + delivery_price
 
             rent = Rent(
-                user_id=fsm_data.get("user_id"),
-                # user_telegram_id=fsm_data.get("user_telegram_id"),
+                tenant_id=tenant_id,          # ✅
+                user_id=fsm_data["user_id"],  # bu ham kerak
                 renter_id=renter.id,
                 product_id=product.id,
                 quantity=item["quantity"],
                 returned_quantity=0,
-                start_date=start_date,  # Date
-                end_date=end_date,  # Date yoki None
+                start_date=start_date,
+                end_date=end_date,
                 latitude=fsm_data.get("renter_latitude"),
                 longitude=fsm_data.get("renter_longitude"),
                 delivery_needed=fsm_data.get("distance_km", 0) > 0,
@@ -79,10 +82,11 @@ async def save_rent_from_fsm(fsm_data: dict):
 
         await session.commit()
 
-        # 3️⃣ Rentlarni qayta yuklash
+        # 3) Rentlarni qayta yuklash (✅ tenant filter)
         result = await session.execute(
             select(Rent)
             .options(selectinload(Rent.product))
+            .where(Rent.tenant_id == tenant_id)      # ✅
             .where(Rent.renter_id == renter.id)
         )
         return result.scalars().all()

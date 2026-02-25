@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 router = Router(name=__name__)
 
 
-@router.message(F.text, Command("rent_report", prefix="/!"))
+@router.message(Command("rent_report", prefix="/!"))
 async def rent_report_start(message: types.Message, state: FSMContext):
     lang = await get_user_language(message)
     logging.info(f"RENT REPORT TEXT: {message.text}")

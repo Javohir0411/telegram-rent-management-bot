@@ -4,7 +4,13 @@ from db.models import Rent
 from datetime import date
 
 
-async def get_rents_for_report(session, user_db_id: int, start_date: date, end_date: date):
+async def get_rents_for_report(
+    session,
+    tenant_id: int,
+    user_db_id: int,
+    start_date: date,
+    end_date: date
+):
     stmt = (
         select(Rent)
         .options(
@@ -13,10 +19,11 @@ async def get_rents_for_report(session, user_db_id: int, start_date: date, end_d
         )
         .where(
             and_(
-                Rent.user_id == user_db_id,  # MUHIM: faqat shu user
+                Rent.tenant_id == tenant_id,   # ✅ tenant filter
+                Rent.user_id == user_db_id,    # ✅ shu user (admin)
                 Rent.start_date <= end_date,
                 or_(
-                    Rent.end_date.is_(None),   # ✅ open ijara ham kirsin
+                    Rent.end_date.is_(None),
                     Rent.end_date >= start_date,
                 ),
             )

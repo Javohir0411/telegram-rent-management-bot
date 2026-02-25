@@ -96,7 +96,7 @@ async def handle_leased_command(message: types.Message):
     kb = build_pagination_keyboard(total_items=len(rents), current_page=page)
 
     tenant_ids = {r.tenant_id for r in rents}
-    logging.info(f"IJARAGA BERGAN ID VA TENANT ID: {tenant_ids | message.from_user.id}")
+    logging.info(f"IJARAGA BERGAN ID VA TENANT ID: {tenant_ids} | {message.from_user.id}")
     await message.answer(text=text, reply_markup=kb, parse_mode="HTML")
 
 
