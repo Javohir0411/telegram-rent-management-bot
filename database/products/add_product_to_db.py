@@ -4,61 +4,55 @@ from db.models import Product
 from utils.enums import ProductTypeEnum, ProductSizeEnum
 
 
+TENANT_ID = 38  # qaysi tenant uchun product qo'shyapsan
+
+
 async def add_products():
     async with async_session_maker() as session:
         products = [
-            # Lesa mahsulotlari, har biri o'z kattaligi bilan
             Product(
+                tenant_id=TENANT_ID,
                 product_type=ProductTypeEnum.lesa,
-                # product_size=ProductSizeEnum.katta,
                 total_quantity=273,
                 price_per_day=3000
             ),
-            # Product(
-            #     product_type=ProductTypeEnum.lesa,
-            #     product_size=ProductSizeEnum.orta,
-            #     total_quantity=50,
-            #     price_per_day=20000
-            # ),
-            # Product(
-            #     product_type=ProductTypeEnum.lesa,
-            #     product_size=ProductSizeEnum.kichik,
-            #     total_quantity=50,
-            #     price_per_day=12000
-            # ),
-
-            # Boshqa mahsulotlar, product_size = None
             Product(
+                tenant_id=TENANT_ID,
                 product_type=ProductTypeEnum.monolit,
                 product_size=None,
                 total_quantity=20,
                 price_per_day=5000
             ),
             Product(
+                tenant_id=TENANT_ID,
                 product_type=ProductTypeEnum.taxta_opalubka,
                 product_size=ProductSizeEnum.four_meters,
                 total_quantity=30,
                 price_per_day=2500
             ),
             Product(
+                tenant_id=TENANT_ID,
                 product_type=ProductTypeEnum.taxta_opalubka,
                 product_size=ProductSizeEnum.three_meters,
                 total_quantity=30,
                 price_per_day=2000
             ),
             Product(
+                tenant_id=TENANT_ID,
                 product_type=ProductTypeEnum.taxta_opalubka,
                 product_size=ProductSizeEnum.two_meters,
                 total_quantity=10,
                 price_per_day=1500
             ),
             Product(
+                tenant_id=TENANT_ID,
                 product_type=ProductTypeEnum.taxta_opalubka,
                 product_size=ProductSizeEnum.one_meter,
                 total_quantity=10,
                 price_per_day=1200
             ),
             Product(
+                tenant_id=TENANT_ID,
                 product_type=ProductTypeEnum.metal_opalubka,
                 product_size=ProductSizeEnum.three_meters,
                 total_quantity=10,
