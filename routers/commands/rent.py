@@ -60,6 +60,7 @@ async def handle_command_rent(message: types.Message, state: FSMContext):
             product_name = RentStrings.CHOOSE_PRODUCT_KEYBOARD[lang][product.product_type.name]
 
         available_types.add(product.product_type.name)
+        print(f"AVAILABLE TYPES: {available_types}")
 
         # remaining qty
         if lang == "uzl":

@@ -30,7 +30,7 @@ SIZE_LABEL = {
     }
 }
 
-PRODUCT_TYPE_LABEL = {
+PRODUCT_TYPE_LABEL: dict[str, dict[ProductTypeEnum, str]] = {
     "uzl": {
         ProductTypeEnum.lesa: "Lesa",
         ProductTypeEnum.monolit: "Monolit ustun",

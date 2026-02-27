@@ -50,7 +50,6 @@ async def handle_rent_start_date(message: types.Message, state: FSMContext):
     )
 
 
-reply_markup = types.ReplyKeyboardRemove()
 
 
 @router.message(F.text.func(is_date), RentStatus.end_date)

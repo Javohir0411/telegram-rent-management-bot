@@ -9,6 +9,7 @@ from .return_product import router as return_product_router
 from .setting_callback import router as settings_callback_router
 from .services import router as service_router
 from .update_pay_status import router as update_pay_status_router
+from .add_product import router as add_product_router
 
 router = Router(name=__name__)
 
@@ -21,4 +22,5 @@ router.include_routers(
     settings_callback_router,
     service_router,
     update_pay_status_router,
+    add_product_router,
 )
