@@ -1,4 +1,3 @@
-from aiogram.client import bot
 from aiogram.types import BotCommandScopeChat
 from sqlalchemy.exc import IntegrityError
 
@@ -30,81 +29,81 @@ async def handle_phone_number(message: types.Message, state: FSMContext):
     await state.update_data(user_phone_number=user_phone_number)
 
     data = await state.get_data()
+
+    # ✅ lang har doim bor bo'lsin
+    lang = data.get("selected_language") or "uzk"
+
     tenant_id = ADMIN_TENANT_ID if telegram_id in ADMIN_IDS else None
+
     async with async_session_maker() as session:
         existing_user = await get_user_by_telegram_or_phone(
             db=session,
             telegram_id=telegram_id,
             phone_number=user_phone_number,
             tenant_id=tenant_id
-
         )
 
         if existing_user:
-            lang = data.get("selected_language")
-            message_text = StartStrings.EXISTING_USER[lang]
-            await message.answer(
-                message_text,
-                reply_markup=types.ReplyKeyboardRemove()
-            )
+            message_text = StartStrings.EXISTING_USER.get(lang, StartStrings.EXISTING_USER["uzk"])
+            await message.answer(message_text, reply_markup=types.ReplyKeyboardRemove())
             await state.clear()
             return
+
         try:
             await create_user(
                 db=session,
                 telegram_id=telegram_id,
                 user_fullname=data["user_fullname"],
                 user_phone_number=data["user_phone_number"],
-                selected_language=data["selected_language"],
+                selected_language=lang,  # ✅ data["selected_language"] o'rniga lang
                 tenant_id=tenant_id,
             )
         except IntegrityError as e:
             await session.rollback()
 
-            lang = data.get("selected_language")
-
             err = str(e.orig) if getattr(e, "orig", None) else str(e)
 
             if "uq_user_tenant_telegram" in err:
                 await message.answer(
-                    StartStrings.EXISTING_USER[lang],
+                    StartStrings.EXISTING_USER.get(lang, StartStrings.EXISTING_USER["uzk"]),
                     reply_markup=types.ReplyKeyboardRemove()
                 )
                 await state.clear()
                 return
+
             if "uq_user_tenant_phone" in err:
-                #telefon nomer bilan dublikat
                 await message.answer(
                     {
                         "uzl": "Bu telefon raqami allaqachon ro'yxatdan o'tgan.",
-                        "uzk": "Бу телефон рақами аллақачон рўйхатдан ўтган..",
+                        "uzk": "Бу телефон рақами аллақачон рўйхатдан ўтган.",
                         "rus": "Этот номер телефона уже зарегистрирован.",
-                    }[lang],
+                    }.get(lang, "Bu telefon raqami allaqachon ro'yxatdan o'tgan."),
                     reply_markup=types.ReplyKeyboardRemove()
                 )
                 await state.clear()
                 return
-            #boshqa integrity error
+
             await message.answer(
-                {"uzl": "Saqlashda xatolik yuz berdi.",
-                 "uzk": "Сақлашда хато юз берди.",
-                 "rus": "Ошибка при сохранении."}[lang],
+                {
+                    "uzl": "Saqlashda xatolik yuz berdi.",
+                    "uzk": "Сақлашда хато юз берди.",
+                    "rus": "Ошибка при сохранении."
+                }.get(lang, "Saqlashda xatolik yuz berdi."),
                 reply_markup=types.ReplyKeyboardRemove()
             )
             await state.clear()
             return
 
+        # bu yerda lang  bor
         commands = BotCommands.COMMANDS.get(lang, BotCommands.COMMANDS["uzk"])
         await message.bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=telegram_id))
 
-        message_text = StartStrings.GET_PHONE_NUMBER[lang].format(
+        message_text = StartStrings.GET_PHONE_NUMBER.get(lang, StartStrings.GET_PHONE_NUMBER["uzk"]).format(
             user_phone_number=markdown.hbold(data["user_phone_number"]),
             user_fullname=markdown.hbold(data["user_fullname"]),
         )
-        await message.answer(
-            text=message_text,
-            reply_markup=types.ReplyKeyboardRemove()
-        )
+        await message.answer(text=message_text, reply_markup=types.ReplyKeyboardRemove())
+        await state.clear()
 
 
 @router.message(Register.phone_number)

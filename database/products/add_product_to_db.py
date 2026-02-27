@@ -1,69 +1,50 @@
-import asyncio
-from database.session import async_session_maker
+from typing import Optional
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from db.models import Product
 from utils.enums import ProductTypeEnum, ProductSizeEnum
 
 
-TENANT_ID = 38  # qaysi tenant uchun product qo'shyapsan
+async def create_or_update_product(
+        session: AsyncSession,
+        *,
+        tenant_id: int,
+        product_type: ProductTypeEnum,
+        product_size: Optional[ProductSizeEnum],
+        add_quantity: int,
+        price_per_day: float,
+) -> Product:
+    if add_quantity <= 0:
+        raise ValueError("add_quantity must be > 0")
+    if price_per_day <= 0:
+        raise ValueError("price_per_day must be > 0")
 
+    stmt = (
+        select(Product)
+        .where(
+            Product.tenant_id == tenant_id,
+            Product.product_type == product_type,
+            Product.product_size.is_(None) if product_size is None else Product.product_size == product_size,
+        )
+        .limit(1)
+    )
+    res = await session.execute(stmt)
+    product = res.scalar_one_or_none()
 
-async def add_products():
-    async with async_session_maker() as session:
-        products = [
-            Product(
-                tenant_id=TENANT_ID,
-                product_type=ProductTypeEnum.lesa,
-                total_quantity=273,
-                price_per_day=3000
-            ),
-            Product(
-                tenant_id=TENANT_ID,
-                product_type=ProductTypeEnum.monolit,
-                product_size=None,
-                total_quantity=20,
-                price_per_day=5000
-            ),
-            Product(
-                tenant_id=TENANT_ID,
-                product_type=ProductTypeEnum.taxta_opalubka,
-                product_size=ProductSizeEnum.four_meters,
-                total_quantity=30,
-                price_per_day=2500
-            ),
-            Product(
-                tenant_id=TENANT_ID,
-                product_type=ProductTypeEnum.taxta_opalubka,
-                product_size=ProductSizeEnum.three_meters,
-                total_quantity=30,
-                price_per_day=2000
-            ),
-            Product(
-                tenant_id=TENANT_ID,
-                product_type=ProductTypeEnum.taxta_opalubka,
-                product_size=ProductSizeEnum.two_meters,
-                total_quantity=10,
-                price_per_day=1500
-            ),
-            Product(
-                tenant_id=TENANT_ID,
-                product_type=ProductTypeEnum.taxta_opalubka,
-                product_size=ProductSizeEnum.one_meter,
-                total_quantity=10,
-                price_per_day=1200
-            ),
-            Product(
-                tenant_id=TENANT_ID,
-                product_type=ProductTypeEnum.metal_opalubka,
-                product_size=ProductSizeEnum.three_meters,
-                total_quantity=10,
-                price_per_day=1500
-            ),
-        ]
+    if product:
+        product.total_quantity += add_quantity
+        product.price_per_day = float(price_per_day)
+    else:
+        product = Product(
+            tenant_id=tenant_id,
+            product_type=product_type,
+            product_size=product_size,  # None bo'lishi mumkin (lesa/monolit)
+            total_quantity=add_quantity,
+            price_per_day=float(price_per_day),
+        )
+        session.add(product)
 
-        session.add_all(products)
-        await session.commit()
-        print("Barcha product-lar bazaga qo'shildi!")
-
-
-if __name__ == "__main__":
-    asyncio.run(add_products())
+    await session.commit()
+    await session.refresh(product)
+    return product

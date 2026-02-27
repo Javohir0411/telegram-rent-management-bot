@@ -48,5 +48,8 @@ class AddProductState(StatesGroup):
     insert_product_name = State()
     are_there_size = State()
     insert_product_size = State()
+    lesa_size_choice = State()
+    taxta_size_choice = State()
+    metal_size_choice = State()
     insert_product_quantity = State()
     insert_product_price = State()

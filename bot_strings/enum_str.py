@@ -82,3 +82,24 @@ RENT_STATUS = {
         RentStatusEnum.returned.name: "Вернулся"
     },
 }
+
+TYPE_TO_SIZE = {
+    ProductTypeEnum.lesa: [
+        ProductSizeEnum.katta,
+        ProductSizeEnum.orta,
+        ProductSizeEnum.kichik,
+    ],
+    ProductTypeEnum.taxta_opalubka: [
+        ProductSizeEnum.four_meters,
+        ProductSizeEnum.three_meters,
+        ProductSizeEnum.two_meters,
+        ProductSizeEnum.one_meter,
+    ],
+    ProductTypeEnum.metal_opalubka: [
+        ProductSizeEnum.four_meters,
+        ProductSizeEnum.three_meters,
+        ProductSizeEnum.two_meters,
+        ProductSizeEnum.one_meter,
+    ],
+    # ProductTypeEnum.monolit: []  # size yo‘q deb qoldiramiz
+}
