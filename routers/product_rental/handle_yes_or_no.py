@@ -1,15 +1,20 @@
-import logging
-from aiogram import Router, types, F
-from aiogram.fsm.context import FSMContext
-
-from bot_strings.enum_str import PRODUCT_TYPE_LABEL
-from bot_strings.rent_command_strings import RentStrings
 from database.products.available_product import get_available_products
-from database.session import async_session_maker, get_user_language
-from keyboards.common_keyboards import build_select_keyboard, build_yes_or_no_kb
-from states import RentStatus
+from bot_strings.rent_command_strings import RentStrings
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL
 from utils.current_user import get_current_user
+from aiogram.fsm.context import FSMContext
+from keyboards.common_keyboards import (
+    build_select_keyboard,
+    build_yes_or_no_kb
+)
 from utils.enums import ProductTypeEnum
+from aiogram import Router, types, F
+from states import RentStatus
+from database.session import (
+    async_session_maker,
+    get_user_language
+)
+import logging
 
 logging.basicConfig(level=logging.INFO)
 router = Router(name=__name__)

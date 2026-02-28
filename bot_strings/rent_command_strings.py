@@ -172,9 +172,12 @@ class RentStrings:
     # }
 
     LOCATION_REQUEST = {
-        "uzl": "Mijozning joylashuvini yuboring📍 ",
-        "uzk": "Мижознинг жойлашувини юборинг📍 ",
-        "rus": "Отправить местоположение клиента📍 ",
+        "uzl": "Mijozning joylashuvini yuboring📍 \n"
+               "(Joylashuv sizga yuborilgan bo'lsa, uni botga jo'nating.) ",
+        "uzk": "Мижознинг жойлашувини юборинг📍\n"
+               "(Жойлашув сизга юборилган бўлса, уни ботга жўнатинг.)",
+        "rus": "Отправить местоположение клиента📍\n"
+               "(Если вам были отправлены данные о местоположении, отправьте их боту.)",
     }
 
     SENT_LOCATION_INFO = {

@@ -2,11 +2,14 @@ import logging
 
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
+from sqlalchemy import select
 
 from bot_strings.rent_command_strings import RentStrings
-from database.session import get_user_language
+from database.session import get_user_language, async_session_maker
+from db.models import Tenant
 from keyboards.common_keyboards import build_yes_or_no_kb
 from states import RentStatus
+from utils.current_user import get_current_user
 from utils.haversine import haversine
 
 logging.basicConfig(level=logging.INFO)
@@ -34,9 +37,15 @@ async def handle_location_request(message: types.Message, state: FSMContext):
     renter_latitude = location.latitude
     renter_longitude = location.longitude
 
-    # 📍 1️⃣ Doimiy nuqta (ombor / baza)
-    base_latitude = 41.425701
-    base_longitude = 69.343535
+    user = await get_current_user(message)
+
+    async with async_session_maker() as session:
+        tenant = (await session.execute(
+            select(Tenant).where(Tenant.id == user.tenant_id)
+        )).scalar_one()
+
+    base_latitude = tenant.base_latitude
+    base_longitude = tenant.base_longitude
 
     distance_km = haversine(
         base_latitude,
@@ -73,13 +82,13 @@ async def handle_location_request(message: types.Message, state: FSMContext):
 
     if lang == "uzl":
         text = ("Mijoz haqida, qo'shimcha, o'zingiz uchun biror-bir izoh/eslatma yozib qo'yasizmi? ⬇️\n"
-                "Agar xoxlamasangiz <b>Skip</b> deb yozib yuboring")
+                "Agar xoxlamasangiz <b>/skip</b> deb yozib yuboring")
     elif lang == "uzk":
         text = ("Мижоз ҳақида, қўшимча, ўзингиз учун бирор-бир изоҳ/еслатма ёзиб қўясизми? ⬇️\n"
-                "Агар хохламасангиз <b>Skip</b> деб ёзиб юборинг")
+                "Агар хохламасангиз <b>/skip</b> деб ёзиб юборинг")
     elif lang == "rus":
         text = ("Хотели бы вы записать для себя дополнительные комментарии/заметки о клиенте? ⬇️\n"
-                "Если вам это не нужно, просто скажите <b>Skip</b>.")
+                "Если вам это не нужно, просто скажите <b>/skip</b>.")
     await state.set_state(RentStatus.notes)
     await message.answer(
         text=text,

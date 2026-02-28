@@ -1,17 +1,23 @@
-import logging
-from aiogram import Router, F, types
-from aiogram.fsm.context import FSMContext
-from aiogram.types import ReplyKeyboardRemove
-from sqlalchemy import select
-
-from bot_strings.enum_str import PRODUCT_TYPE_LABEL
-from bot_strings.rent_command_strings import RentStrings
 from database.products.available_product import get_available_products
-from database.session import async_session_maker, get_user_language
-from keyboards.common_keyboards import build_select_keyboard, build_taxta_keyboard, build_metal_keyboard
-from states import RentStatus
+from bot_strings.rent_command_strings import RentStrings
+from bot_strings.enum_str import PRODUCT_TYPE_LABEL
 from utils.current_user import get_current_user
+from aiogram.types import ReplyKeyboardRemove
+from aiogram.fsm.context import FSMContext
+from keyboards.common_keyboards import (
+    build_select_keyboard,
+    build_taxta_keyboard,
+    build_metal_keyboard
+)
 from utils.enums import ProductTypeEnum
+from aiogram import Router, F, types
+import logging
+from sqlalchemy import select
+from database.session import (
+    async_session_maker,
+    get_user_language
+)
+from states import RentStatus
 
 router = Router(name=__name__)
 
@@ -45,7 +51,8 @@ async def handle_selected_product(message: types.Message, state: FSMContext):
         await message.answer(
             text={"uzl": "Iltimos, faqat quyidagi tugmalardan tanlang.",
                   "uzk": "Илтимос, фақат қуйидаги тугмалардан танланг.",
-                  "rus": "Пожалуйста, выберите только одну из кнопок ниже."}.get(lang, "Илтимос, фақат қуйidagi тугмаларdan tanlang."),
+                  "rus": "Пожалуйста, выберите только одну из кнопок ниже."}.get(lang,
+                                                                                 "Илтимос, фақат қуйidagi тугмаларdan tanlang."),
             reply_markup=build_select_keyboard(allowed_labels),
         )
         return
@@ -63,7 +70,30 @@ async def handle_selected_product(message: types.Message, state: FSMContext):
     rent_info.append({"product_type": product_type_enum.value})
     await state.update_data(rent_info=rent_info)
 
-    # 5) Keyingi state
+    # ✅ agar size tanlanmaydigan type bo'lsa (lesa/monolit)
+    if product_type_enum not in (ProductTypeEnum.taxta_opalubka, ProductTypeEnum.metal_opalubka):
+        # available_products ichidan aynan shu productni topish kere(size=None)
+        selected_product = None
+        selected_remaining = None
+        for p, rem in available_products:
+            if p.product_type == product_type_enum and p.product_size is None:
+                selected_product = p
+                selected_remaining = rem
+                break
+
+        # state ga saqlaymiz (quantityda kere bo'ladi)
+        if selected_product:
+            rent_info = (await state.get_data()).get("rent_info", [])
+            rent_info[-1]["product_id"] = selected_product.id
+            await state.update_data(rent_info=rent_info, selected_remaining=selected_remaining)
+
+        await state.set_state(RentStatus.quantity)
+        await message.answer(
+            text=RentStrings.INSERT_QUANTITY_PRODUCT[lang],
+            reply_markup=ReplyKeyboardRemove()
+        )
+        return
+
     if product_type_enum == ProductTypeEnum.taxta_opalubka:
         await state.set_state(RentStatus.taxta_size_choice)
         size_text = {

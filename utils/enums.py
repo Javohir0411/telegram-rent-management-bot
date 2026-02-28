@@ -1,7 +1,7 @@
+from aiogram.filters.callback_data import CallbackData
 from enum import Enum, IntEnum, auto, StrEnum
 from sys import prefix
 
-from aiogram.filters.callback_data import CallbackData
 
 
 class LanguageEnum(StrEnum):

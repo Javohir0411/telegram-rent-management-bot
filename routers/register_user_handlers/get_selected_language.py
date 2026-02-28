@@ -49,9 +49,3 @@ async def handle_selected_language(message: types.Message, state: FSMContext):
         )
 
 
-# @router.message(Register.language)
-# async def handle_invalid_language(message: types.Message):
-#     await message.reply(
-#         text="Iltimos, quyidagi tillardan birini tanlang⬇️",
-#         reply_markup=choose_language_kb()
-#     )

@@ -1,12 +1,9 @@
-from multiprocessing.forkserver import read_signed
-from typing import Iterable
-
-from bot_strings.enum_str import SIZE_LABEL
-from bot_strings.rent_command_strings import RentStrings
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from bot_strings.rent_command_strings import RentStrings
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-
+from bot_strings.enum_str import SIZE_LABEL
 from utils.enums import ProductSizeEnum
+from typing import Iterable
 
 
 def choose_language_kb():

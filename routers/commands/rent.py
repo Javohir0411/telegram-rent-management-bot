@@ -1,17 +1,18 @@
-import logging
-from aiogram import Router, types, F
-from aiogram.filters import Command
-from aiogram.fsm.context import FSMContext
-
-from database.session import get_user_language, async_session_maker
+from database.products.available_product import get_available_products  # buni ham tenantli qilamiz
 from keyboards.common_keyboards import build_select_keyboard
 from bot_strings.rent_command_strings import RentStrings
 from bot_strings.enum_str import PRODUCT_TYPE_LABEL
-from states import RentStatus
-
 from utils.current_user import get_current_user
+from aiogram.fsm.context import FSMContext
 from utils.enums import ProductTypeEnum
-from database.products.available_product import get_available_products  # buni ham tenantli qilamiz
+from aiogram import Router, types, F
+from aiogram.filters import Command
+import logging
+from database.session import (
+    get_user_language,
+    async_session_maker
+)
+from states import RentStatus
 
 logging.basicConfig(level=logging.INFO)
 router = Router(name=__name__)
@@ -22,10 +23,7 @@ async def handle_command_rent(message: types.Message, state: FSMContext):
     lang = await get_user_language(message)
 
     current_user = await get_current_user(message)
-    logging.info(f"CURRENT USER ID: {current_user.id}")
-    logging.info(f"CURRENT USER TENANT ID: {current_user.tenant_id}")
     if not current_user:
-        logging.info(f"CURRENT NOT USER TENANT ID: {current_user.tenant_id}")
         await message.answer(
             {"uzl": "Avval ro‘yxatdan o‘ting: /start",
              "uzk": "Аввал рўйхатдан ўтинг: /start",
@@ -33,11 +31,10 @@ async def handle_command_rent(message: types.Message, state: FSMContext):
         )
         return
 
-    # user_id ni state ga yozib qo'yamiz (kim create qildi)
-    await state.update_data(user_id=current_user.id, tenant_id = current_user.tenant_id)
+    # user_id ni state ga yozib qo'yamiz (kim create qilganini korish uchun)
+    await state.update_data(user_id=current_user.id, tenant_id=current_user.tenant_id)
 
     async with async_session_maker() as db:
-        # ✅ MUHIM: tenant_id beramiz
         available_products = await get_available_products(db, tenant_id=current_user.tenant_id)
 
     if not available_products:

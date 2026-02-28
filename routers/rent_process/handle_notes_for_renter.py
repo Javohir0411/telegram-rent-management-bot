@@ -10,14 +10,14 @@ from db.save_rents import save_rent_from_fsm  # Sizning saqlash funksiyangiz
 
 router = Router(name=__name__)
 
-
+@router.message(F.text.casefold() == "/skip", RentStatus.notes)
 @router.message(F.text, RentStatus.notes)
 async def handle_notes_for_renter(message: types.Message, state: FSMContext):
     text = message.text
     lang = await get_user_language(message)
 
     # 1️⃣ FSMContext ga notes saqlash
-    if text.casefold() != "skip":
+    if text.casefold() != "/skip":
         await state.update_data(notes=text)
 
     # 2️⃣ FSMContext dan barcha ma'lumotlarni olish
