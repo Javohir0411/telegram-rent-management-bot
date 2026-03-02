@@ -56,12 +56,14 @@ async def generate_and_send_report(
             await message.answer("❗Сиз базада рўйхатдан ўтмагансиз.")
             return
 
+        is_admin = requester_tg_id in ADMIN_IDS
+
         rents = await get_rents_for_report(
             session=session,
-            tenant_id=user.tenant_id,  # ✅ shu yerda tenant olinadi
-            user_db_id=user.id,
+            tenant_id=user.tenant_id,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            user_db_id=None if is_admin else user.id
         )
 
     if not rents:

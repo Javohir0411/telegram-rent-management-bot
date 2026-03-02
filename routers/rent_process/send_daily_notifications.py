@@ -171,6 +171,7 @@ async def send_expired_rent_notification(bot: Bot):
                     text += f"📝 {lbl['notes']}: {rents_list[0].comment or ''}"
 
                     try:
+                        logging.info(f"XABAR YUBORILGAN USERLAR: {chat_id}")
                         await bot.send_message(chat_id=chat_id, text=text)
                     except Exception as e:
                         logging.error(f"XABAR YUBORISHDA XATOLIK chat_id={chat_id}: {e}")
