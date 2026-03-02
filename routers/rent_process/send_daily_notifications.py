@@ -82,61 +82,95 @@ async def send_expired_rent_notification(bot: Bot):
             logging.info("BUGUN TUGAGAN IJARA TOPILMADI")
             return
 
-        renters_dict = {}
-        for rent in rents:
-            renters_dict.setdefault(rent.renter_id, []).append(rent)
+        rents_by_tenant: dict[int, list[Rent]] = {}
+        for r in rents:
+            rents_by_tenant.setdefault(r.tenant_id, []).append(r)
+        # Har bir tenant bo'yicha kimga yuborilishini aniqlash
+        #   tenant_id = 1 => adminlar
+        #   boshqalar => users jadvalidan shu tenant_id dagilar
+        admin_ids = list(get_allowed_tg_ids())
 
-        for renter_id, rents_list in renters_dict.items():
-            user = rents_list[0].user
-            lang = user.selected_language if user else "uzk"
+        for tenant_id, tenant_rents in rents_by_tenant.items():
+            if tenant_id == 1:
+                recipient_ids = admin_ids
+            else:
+                users_res = await session.execute(
+                    select(User.telegram_id, User.selected_language)
+                    .where(User.tenant_id == tenant_id)
+                )
+                rows = users_res.all()
+                recipient_ids = [tg_id for tg_id, _lang in rows]
 
-            headers = {
-                "uzl": f"🕖 {rents_list[0].renter.renter_fullname} ijaraga olgan mahsulotlar muddati bugun tugadi \n\n",
-                "uzk": f"🕖 {rents_list[0].renter.renter_fullname} ижарага олган маҳсулотлар муддати бугун тугади \n\n",
-                "rus": f"🕖 {rents_list[0].renter.renter_fullname} срок действия арендованных продуктов истекает сегодня: \n\n",
-            }
-            logging.info(f"SANA SANA: {rents_list[0].start_date}")
-            # tilga mos label
+            if not recipient_ids:
+                continue
 
-            text = headers[lang]
-            lbl = labels[lang]
-            total_product_price = 0
-            total_delivery_price = 0
-            total_sum = 0
+            for chat_id in recipient_ids:
+                # recipient tilini olish:
+                #   - adminlar bo'lsa ham users jadvalidan olinadi
+                users_res = await session.execute(
+                    select(User.selected_language, User.tenant_id)
+                    .where(User.telegram_id == chat_id)
+                )
+                row = users_res.one_or_none()
 
-            for rent in rents_list:
-                line = f"{PRODUCT_TYPE_LABEL[lang][rent.product.product_type]}"
+                #user bazada bo'lmasa default
+                lang = (row[0] if row else "uzk")
 
-                if rent.product.product_size:
-                    line += f" ({SIZE_LABEL[lang][rent.product.product_size]})"
+                #ADMIN bo'lsa ham tenant_id = 1 ma'lumoti ketishi kerak.
+                effective_tenant_id = 1 if tenant_id == 1 else tenant_id
 
-                line += f" — {rent.quantity} dona\n"
-                line += f"{lbl['product_price']}: {rent.product_price} so'm\n"
+                #shu tenant_rents ichidan faqat effective_tenant_id nikini olamiz
+                relevant_rents = [r for r  in tenant_rents if r.tenant_id == effective_tenant_id]
+                if not relevant_rents:
+                    continue
 
-                line += f"{lbl['delivery']}: {rent.delivery_price} so'm\n"
-                logging.info(f"TOTAL DELIVERY: {rent.delivery_price} so'm")
+                # 5) renter bo‘yicha guruhlab text yasaymiz
+                renters_dict: dict[int, list[Rent]] = {}
+                for rent in relevant_rents:
+                    renters_dict.setdefault(rent.renter_id, []).append(rent)
 
-                line += f"{lbl['payment_status']}: {rent.status}\n\n"
+                # har renter uchun alohida blok
+                for renter_id, rents_list in renters_dict.items():
+                    renter_name = rents_list[0].renter.renter_fullname
 
-                text += line  # 🔥 MUHIM QATOR
+                    headers = {
+                        "uzl": f"🕖 {renter_name} ijaraga olgan mahsulotlar muddati tugadi:\n\n",
+                        "uzk": f"🕖 {renter_name} ижарага олган маҳсулотлар муддати тугади:\n\n",
+                        "rus": f"🕖 Срок аренды у клиента {renter_name} истёк:\n\n",
+                    }
+                    lbl = labels.get(lang, labels["uzk"])
+                    text = headers.get(lang, headers["uzk"])
 
-                total_product_price += rent.product_price or 0
+                    total_product_price = 0
+                    total_delivery_price = 0
 
-            total_delivery_price += rent.delivery_price or 0
-            total_sum = total_product_price + total_delivery_price
+                    for rent in rents_list:
+                        line = f"{PRODUCT_TYPE_LABEL[lang][rent.product.product_type]}"
+                        if rent.product.product_size:
+                            line += f" ({SIZE_LABEL[lang][rent.product.product_size]})"
 
-            text += f"\n{lbl['total_product']}: {total_product_price} so'm\n"
-            text += f"{lbl['total_delivery']}: {total_delivery_price} so'm\n"
-            text += f"{lbl['total_sum']}: {total_sum} so'm\n"
+                        line += f" — {rent.quantity} dona\n"
+                        line += f"{lbl['product_price']}: {rent.product_price or 0} so'm\n"
+                        line += f"{lbl['delivery']}: {rent.delivery_price or 0} so'm\n"
+                        line += f"{lbl['payment_status']}: {rent.status}\n\n"
 
-            text += f"📍{lbl['location']}: {rents_list[0].latitude}, {rents_list[0].longitude}\n"
-            text += f"📍{lbl['phone_number']}: {rents_list[0].renter.renter_phone_number}\n"
-            text += f"🛂 {lbl['passport']}: {rents_list[0].renter.renter_passport_info}\n"
-            text += f"📝 {lbl['notes']}: {rents_list[0].comment}"
+                        text += line
 
-            tg_ids = get_allowed_tg_ids()
-            for ids in tg_ids:
-                try:
-                    await bot.send_message(chat_id=ids, text=text)
-                except Exception as e:
-                    logging.error(f"XABAR YUBORISHDA XATOLIK: {e}")
+                        total_product_price += rent.product_price or 0
+                        total_delivery_price += rent.delivery_price or 0
+
+                    total_sum = total_product_price + total_delivery_price
+
+                    text += f"\n{lbl['total_product']}: {total_product_price} so'm\n"
+                    text += f"{lbl['total_delivery']}: {total_delivery_price} so'm\n"
+                    text += f"{lbl['total_sum']}: {total_sum} so'm\n"
+
+                    text += f"📍{lbl['location']}: {rents_list[0].latitude}, {rents_list[0].longitude}\n"
+                    text += f"📞 {lbl['phone_number']}: {rents_list[0].renter.renter_phone_number}\n"
+                    text += f"🛂 {lbl['passport']}: {rents_list[0].renter.renter_passport_info}\n"
+                    text += f"📝 {lbl['notes']}: {rents_list[0].comment or ''}"
+
+                    try:
+                        await bot.send_message(chat_id=chat_id, text=text)
+                    except Exception as e:
+                        logging.error(f"XABAR YUBORISHDA XATOLIK chat_id={chat_id}: {e}")
