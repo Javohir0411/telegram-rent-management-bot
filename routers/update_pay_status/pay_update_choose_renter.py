@@ -13,6 +13,7 @@ from aiogram.types import (
 )
 
 from states import PayUpdateState
+from utils.current_user import get_current_user
 
 router = Router(name=__name__)
 
@@ -20,6 +21,7 @@ router = Router(name=__name__)
 @router.callback_query(F.data.startswith("payupd_renter:"))
 async def handle_payupd_renter(call: CallbackQuery, state: FSMContext):
     lang = await get_user_language(call)
+    current_user = await get_current_user(message)
 
     logging.info(f"HANDLE PAYUPD RENTER CALLBACK: {call.data}")
     logging.info(f"PAY UPDATE GA KIRGAN USER: {call.message.from_user.id}")
