@@ -21,7 +21,7 @@ router = Router(name=__name__)
 @router.callback_query(F.data.startswith("payupd_renter:"))
 async def handle_payupd_renter(call: CallbackQuery, state: FSMContext):
     lang = await get_user_language(call)
-    current_user = await get_current_user(message)
+    current_user = await get_current_user(call)
 
     logging.info(f"HANDLE PAYUPD RENTER CALLBACK: {call.data}")
     logging.info(f"PAY UPDATE GA KIRGAN USER: {call.message.from_user.id}")
