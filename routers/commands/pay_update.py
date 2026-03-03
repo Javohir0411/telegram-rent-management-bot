@@ -1,16 +1,13 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from sqlalchemy import select
-
 from database.session import get_user_language, async_session_maker
+from utils.current_user import get_current_user
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from aiogram import Router, types
-from db.models import Renter
-import logging
-
 from states import PayUpdateState
-from utils.admin_only import AdminOnly
-from utils.current_user import get_current_user
+from sqlalchemy import select, exists
+from db.models import Renter, Rent
+import logging
 
 logging.basicConfig(level=logging.INFO)
 logging.basicConfig(level=logging.WARNING)
@@ -35,8 +32,17 @@ async def handle_pay_update_command(message: types.Message, state: FSMContext):
         renters = (
             await session.execute(
                 select(Renter)
-                .where(Renter.tenant_id == current_user.tenant_id)
-                .order_by(Renter.id.desc()).limit(20),
+                .where(
+                    Renter.tenant_id == current_user.tenant_id,
+                    exists(
+                        select(1).where(
+                            Rent.tenant_id == current_user.tenant_id,
+                            Rent.renter_id == Renter.id,
+                        )
+                    )
+                )
+                .order_by(Renter.id.desc())
+                .limit(20)
             )
         ).scalars().all()
 

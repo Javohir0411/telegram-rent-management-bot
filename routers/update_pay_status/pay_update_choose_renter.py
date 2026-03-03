@@ -22,6 +22,7 @@ async def handle_payupd_renter(call: CallbackQuery, state: FSMContext):
     lang = await get_user_language(call)
 
     logging.info(f"HANDLE PAYUPD RENTER CALLBACK: {call.data}")
+    logging.info(f"PAY UPDATE GA KIRGAN USER: {call.message.from_user.id}")
     renter_id = int(call.data.split(":")[1])
     await state.update_data(pay_update_renter_id=renter_id)
     logging.info(f"PAYMENT UPDATE RENTER ID: {renter_id}")
@@ -29,7 +30,9 @@ async def handle_payupd_renter(call: CallbackQuery, state: FSMContext):
     async with async_session_maker() as session:
         stmt = (
             select(Rent)
-            .where(Rent.renter_id == renter_id)  # ✅ to'g'ri
+            .where(
+                Rent.tenant_id == current_user.tenant_id,
+                Rent.renter_id == renter_id)  # ✅ to'g'ri
             .options(selectinload(Rent.product), selectinload(Rent.renter))
             .order_by(Rent.id.desc())
             .limit(20)
@@ -46,6 +49,7 @@ async def handle_payupd_renter(call: CallbackQuery, state: FSMContext):
                     "rus": "❌ Информация об арендной плате для этого арендатора не найдена.",
                 }.get(lang, "Бу ижарачида ижара топилмади.")
             )
+            return
         rows = []
         for r in rents:
             product_label = f"{PRODUCT_TYPE_LABEL[lang][r.product.product_type.value]}" if r.product else f"product_id = {r.product_id}"
