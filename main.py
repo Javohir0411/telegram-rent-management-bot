@@ -3,6 +3,8 @@ from datetime import datetime, time, timedelta
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from sqlalchemy.ext.asyncio import create_async_engine
+
 from routers import router as main_router
 import asyncio
 import logging
