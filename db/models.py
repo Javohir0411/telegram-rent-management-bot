@@ -43,23 +43,50 @@ class Tenant(Base):
     updated_at = Column(Date, server_default=func.current_date(), onupdate=func.now())
 
 
+# class User(Base):
+#     __tablename__ = "users"
+#     __table_args__ = (
+#         # tenant ichida telegram_id unique bo'lsin
+#         UniqueConstraint("tenant_id", "telegram_id", name="uq_user_tenant_telegram"),
+#         # tenant ichida phone unique bo'lsin
+#         UniqueConstraint("tenant_id", "user_phone_number", name="uq_user_tenant_phone"),
+#     )
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#
+#     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
+#     telegram_id = Column(BigInteger, nullable=False, index=True)
+#
+#     user_fullname = Column(String, nullable=False)
+#     user_phone_number = Column(String, nullable=False)
+#     selected_language = Column(String, nullable=False)
+#     tenant = relationship("Tenant", back_populates="users")
+#     rents = relationship("Rent", back_populates="user")
+#
+#     created_at = Column(Date, server_default=func.current_date())
+#     updated_at = Column(Date, server_default=func.current_date(), onupdate=func.now())
+
 class User(Base):
     __tablename__ = "users"
     __table_args__ = (
-        # tenant ichida telegram_id unique bo'lsin
         UniqueConstraint("tenant_id", "telegram_id", name="uq_user_tenant_telegram"),
-        # tenant ichida phone unique bo'lsin
         UniqueConstraint("tenant_id", "user_phone_number", name="uq_user_tenant_phone"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
 
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
-    telegram_id = Column(BigInteger, nullable=False, index=True)
+
+    telegram_id = Column(BigInteger, nullable=True, index=True)
 
     user_fullname = Column(String, nullable=False)
     user_phone_number = Column(String, nullable=False)
     selected_language = Column(String, nullable=False)
+
+    password_hash = Column(String, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    is_phone_verified = Column(Boolean, nullable=True, default=False)
+
     tenant = relationship("Tenant", back_populates="users")
     rents = relationship("Rent", back_populates="user")
 
